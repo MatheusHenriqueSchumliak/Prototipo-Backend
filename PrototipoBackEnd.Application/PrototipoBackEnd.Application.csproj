@@ -7,6 +7,18 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\PrototipoBackEnd.Domain\PrototipoBackEnd.Domain.csproj" />
+	  <PackageReference Include="AutoMapper" Version="13.0.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\PrototipoBackEnd.Domain\PrototipoBackEnd.Domain.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Dtos\" />
+	  <Folder Include="Interfaces\" />
+	  <Folder Include="Mapping\" />
+	  <Folder Include="Validators\" />
+	  <Folder Include="Services\" />
 	</ItemGroup>
 </Project>
