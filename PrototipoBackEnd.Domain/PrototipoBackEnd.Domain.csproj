@@ -7,9 +7,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Folder Include="Entities\" />
-	  <Folder Include="Enumerables\" />
-	  <Folder Include="Interfaces\" />
 	  <Folder Include="Exceptions\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="MongoDB.Bson" Version="3.4.0" />
 	</ItemGroup>
 </Project>
