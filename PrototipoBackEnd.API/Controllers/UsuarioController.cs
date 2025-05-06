@@ -64,7 +64,7 @@ namespace PrototipoBackEnd.API.Controllers
 
 		// CREATE - Adicionar um novo usuário (POST)
 		[HttpPost]
-		public async Task<ActionResult<UsuarioDto>> AdicionarUsuario(UsuarioDto dto)
+		public async Task<ActionResult<UsuarioDto>> AdicionarUsuario([FromForm] UsuarioDto dto)
 		{
 			await _usuarioService.Adicionar(dto);
 
@@ -73,7 +73,7 @@ namespace PrototipoBackEnd.API.Controllers
 
 		// UPDATE - Atualizar um usuário existente (PUT)
 		[HttpPut("{id}")]
-		public async Task<ActionResult<UsuarioDto>> AtualizarUsuario(UsuarioDto dto, string id)
+		public async Task<ActionResult<UsuarioDto>> AtualizarUsuario([FromForm] UsuarioDto dto, string id)
 		{
 			// Valida o modelo
 			if (!ModelState.IsValid)

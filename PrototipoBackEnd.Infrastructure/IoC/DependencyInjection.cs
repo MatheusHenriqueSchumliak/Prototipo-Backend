@@ -31,6 +31,7 @@ namespace PrototipoBackEnd.Infrastructure.IoC
 			#region AutoMapper Configuração
 
 			services.AddAutoMapper(typeof(UsuarioProfile).Assembly);
+			services.AddAutoMapper(typeof(ArtesaoProfile).Assembly);
 
 			#endregion
 
@@ -70,11 +71,13 @@ namespace PrototipoBackEnd.Infrastructure.IoC
 
 			// Aqui você pode registrar repositórios específicos  
 			services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+			services.AddScoped<IArtesaoRepository, ArtesaoRepository>();
 			#endregion ---------------------------------  
 
 			#region Serviços --- Injeção de dependencia  
 
 			services.AddScoped<IUsuarioService, UsuarioService>();
+			services.AddScoped<IArtesaoService, ArtesaoService>();
 			services.AddScoped<ISenhaService, SenhaService>();
 
 			services.AddScoped<IAmazonS3Service, AmazonS3Service>();
