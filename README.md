@@ -14,6 +14,7 @@
         <li>.NET Core</li>
         <li>Entity Framework Core</li>
         <li>MongoDB</li>
+        <li>Amazon S3</li>
     </ul>
 
  <h2>Próximos Passos</h2>
