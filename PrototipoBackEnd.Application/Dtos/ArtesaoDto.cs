@@ -5,7 +5,7 @@ namespace PrototipoBackEnd.Application.Dtos
 {
 	public class ArtesaoDto
 	{
-		public string Id { get; set; }
+		public string? Id { get; set; }
 		public string UsuarioId { get; set; }
 
 		public string NomeArtesao { get; set; } = null!;

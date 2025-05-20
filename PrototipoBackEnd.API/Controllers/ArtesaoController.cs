@@ -29,7 +29,7 @@ namespace PrototipoBackEnd.API.Controllers
 
 		// READ - Buscar todos os Artesãos (GET)
 		[HttpGet]
-		public async Task<ActionResult<List<ArtesaoDto>>> BuscarTodosArtesaos()
+		public async Task<ActionResult<List<ArtesaoDto>>> BuscarTodos()
 		{
 			List<ArtesaoDto> artesaos = await _artesaoService.BuscarTodos();
 
@@ -38,7 +38,7 @@ namespace PrototipoBackEnd.API.Controllers
 
 		// READ - Buscar Artesão por id (GET) {id}
 		[HttpGet("{id}")]
-		public async Task<ActionResult<ArtesaoDto>> BuscarArtesao(string id)
+		public async Task<ActionResult<ArtesaoDto>> BuscarPorId(string id)
 		{
 			try
 			{
@@ -63,16 +63,17 @@ namespace PrototipoBackEnd.API.Controllers
 
 		// CREATE - Adicionar um novo Artesão (POST)
 		[HttpPost]
-		public async Task<ActionResult<ArtesaoDto>> AdicionarArtesao([FromForm] ArtesaoDto dto, IFormFile imagem)
+		public async Task<ActionResult<ArtesaoDto>> Adicionar([FromForm] ArtesaoDto dto, IFormFile imagem)
 		{
 			await _artesaoService.Adicionar(dto);
 
-			return CreatedAtAction(nameof(AdicionarArtesao), new { dto }, dto);
+			//return CreatedAtAction(nameof(AdicionarArtesao), new { dto }, dto);
+			return Ok(dto);
 		}
 
 		// UPDATE - Atualizar um Artesão existente (PUT)
 		[HttpPut("{id}")]
-		public async Task<ActionResult<ArtesaoDto>> AtualizarArtesao([FromForm] ArtesaoDto dto, string id)
+		public async Task<ActionResult<ArtesaoDto>> Atualizar([FromForm] ArtesaoDto dto, string id)
 		{
 			// Valida o modelo
 			if (!ModelState.IsValid)
@@ -93,7 +94,7 @@ namespace PrototipoBackEnd.API.Controllers
 
 		// DELETE - Excluir um Artesão existente (DELETE)
 		[HttpDelete("{id}")]
-		public async Task<ActionResult<ArtesaoDto>> ExcluirArtesao(string id)
+		public async Task<ActionResult<ArtesaoDto>> Excluir(string id)
 		{
 			// Simula uma operação assíncrona
 			await Task.Delay(100);

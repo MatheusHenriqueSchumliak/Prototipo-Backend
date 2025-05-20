@@ -30,7 +30,7 @@ namespace PrototipoBackEnd.API.Controllers
 
 		// READ - Buscar todos os usuários (GET)
 		[HttpGet]
-		public async Task<ActionResult<List<UsuarioDto>>> BuscarTodosUsuarios()
+		public async Task<ActionResult<List<UsuarioDto>>> BuscarTodos()
 		{
 			List<UsuarioDto> usuarios = await _usuarioService.BuscarTodos();
 
@@ -39,7 +39,7 @@ namespace PrototipoBackEnd.API.Controllers
 
 		// READ - Buscar usuário por id (GET) {id}
 		[HttpGet("{id}")]
-		public async Task<ActionResult<UsuarioDto>> BuscarUsuario(string id)
+		public async Task<ActionResult<UsuarioDto>> BuscarPorId(string id)
 		{
 			try
 			{
@@ -64,16 +64,18 @@ namespace PrototipoBackEnd.API.Controllers
 
 		// CREATE - Adicionar um novo usuário (POST)
 		[HttpPost]
-		public async Task<ActionResult<UsuarioDto>> AdicionarUsuario([FromForm] UsuarioDto dto)
+		public async Task<ActionResult<UsuarioDto>> Adicionar([FromBody] UsuarioDto dto)
 		{
 			await _usuarioService.Adicionar(dto);
 
-			return CreatedAtAction(nameof(AdicionarUsuario), new { dto }, dto);
+			//return CreatedAtAction(nameof(AdicionarUsuario), new { dto }, dto);
+			return Ok(dto);
+
 		}
 
 		// UPDATE - Atualizar um usuário existente (PUT)
 		[HttpPut("{id}")]
-		public async Task<ActionResult<UsuarioDto>> AtualizarUsuario([FromForm] UsuarioDto dto, string id)
+		public async Task<ActionResult<UsuarioDto>> Atualizar([FromForm] UsuarioDto dto, string id)
 		{
 			// Valida o modelo
 			if (!ModelState.IsValid)
@@ -94,7 +96,7 @@ namespace PrototipoBackEnd.API.Controllers
 
 		// DELETE - Excluir um usuário existente (DELETE)
 		[HttpDelete("{id}")]
-		public async Task<ActionResult<UsuarioDto>> ExcluirUsuario(string id)
+		public async Task<ActionResult<UsuarioDto>> Excluir(string id)
 		{
 			// Simula uma operação assíncrona
 			await Task.Delay(100);
