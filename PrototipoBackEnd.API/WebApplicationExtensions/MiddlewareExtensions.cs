@@ -14,6 +14,9 @@
 			// Configuração do pipeline HTTP
 			app.UseCors("PermitirFrontend");
 			app.UseHttpsRedirection();
+
+			//IMPORTANTE: Autenticação deve vir antes da autorização
+			app.UseAuthentication();
 			app.UseAuthorization();
 
 			return app;

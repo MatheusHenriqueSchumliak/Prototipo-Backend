@@ -8,6 +8,7 @@ namespace PrototipoBackEnd.Infrastructure.Mapping
 		{
 			{ typeof(Usuario), "Usuarios" },
 			{ typeof(Artesao), "Artesaos" },
+			{ typeof(Artesanato), "Artesanatos" },
 			//{ typeof(Endereco), "Enderecos" },
 		};
 

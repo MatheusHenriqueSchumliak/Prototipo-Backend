@@ -4,6 +4,7 @@ using PrototipoBackEnd.Domain.Interfaces.Services;
 using PrototipoBackEnd.Infrastructure.Repository;
 using Microsoft.Extensions.DependencyInjection;
 using PrototipoBackEnd.Infrastructure.Services;
+using PrototipoBackEnd.Infrastructure.Security;
 using PrototipoBackEnd.Infrastructure.Context;
 using PrototipoBackEnd.Application.Interfaces;
 using MongoDB.Bson.Serialization.Serializers;
@@ -13,9 +14,9 @@ using PrototipoBackEnd.Domain.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson.Serialization;
+using Amazon.Runtime;
 using MongoDB.Driver;
 using MongoDB.Bson;
-using Amazon.Runtime;
 using Amazon.S3;
 using Amazon;
 
@@ -32,6 +33,7 @@ namespace PrototipoBackEnd.Infrastructure.IoC
 
 			services.AddAutoMapper(typeof(UsuarioProfile).Assembly);
 			services.AddAutoMapper(typeof(ArtesaoProfile).Assembly);
+			services.AddAutoMapper(typeof(ArtesanatoProfile).Assembly);
 
 			#endregion
 
@@ -72,17 +74,20 @@ namespace PrototipoBackEnd.Infrastructure.IoC
 			// Aqui você pode registrar repositórios específicos  
 			services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 			services.AddScoped<IArtesaoRepository, ArtesaoRepository>();
+			services.AddScoped<IArtesanatoRepository, ArtesanatoRepository>();
 			#endregion ---------------------------------  
 
 			#region Serviços --- Injeção de dependencia  
 
 			services.AddScoped<IUsuarioService, UsuarioService>();
 			services.AddScoped<IArtesaoService, ArtesaoService>();
+			services.AddScoped<IArtesanatoService, ArtesanatoService>();
+
 			services.AddScoped<ISenhaService, SenhaService>();
+			services.AddScoped<IAuthService, AuthService>();
+			services.AddScoped<ITokenService, TokenService>();
 
 			services.AddScoped<IAmazonS3Service, AmazonS3Service>();
-
-
 			#endregion ---------------------------------  
 
 			return services;

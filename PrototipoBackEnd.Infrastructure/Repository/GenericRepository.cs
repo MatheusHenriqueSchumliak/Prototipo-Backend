@@ -1,7 +1,7 @@
-﻿using PrototipoBackEnd.Infrastructure.Mapping;
+﻿using PrototipoBackEnd.Domain.Interfaces.Repositories;
+using PrototipoBackEnd.Infrastructure.Mapping;
 using PrototipoBackEnd.Infrastructure.Context;
 using MongoDB.Driver;
-using PrototipoBackEnd.Domain.Interfaces.Repositories;
 
 namespace PrototipoBackEnd.Infrastructure.Repository
 {
@@ -19,7 +19,9 @@ namespace PrototipoBackEnd.Infrastructure.Repository
 		#endregion
 
 		public async Task<IEnumerable<T>> BuscarTodos()
-			=> await _collection.Find(_ => true).ToListAsync();
+		{
+			return await _collection.Find(_ => true).ToListAsync();
+		}
 
 		public async Task<T> BuscarPorId(string id)
 		{
@@ -43,12 +45,10 @@ namespace PrototipoBackEnd.Infrastructure.Repository
 			if (!Guid.TryParse(id, out _))
 				throw new ArgumentException("ID inválido.");
 
-
 			// Define o filtro pelo ID
 			var filter = Builders<T>.Filter.Eq("_id", id);
 
-			// Garante que o ID da entidade seja o mesmo do parâmetro
-			// Isso evita que o Mongo entenda como uma tentativa de trocar o _id
+			// Garante que o ID da entidade seja o mesmo do parâmetro // Isso evita que o Mongo entenda como uma tentativa de trocar o _id
 			var prop = typeof(T).GetProperty("Id");
 			if (prop != null && prop.CanWrite)
 			{
@@ -59,7 +59,6 @@ namespace PrototipoBackEnd.Infrastructure.Repository
 
 			if (result.MatchedCount == 0)
 				throw new Exception($"Entidade com o ID {id} não encontrada.");
-
 
 			return entity;
 		}
@@ -75,7 +74,6 @@ namespace PrototipoBackEnd.Infrastructure.Repository
 			var result = await _collection.DeleteOneAsync(filter);
 			return result.DeletedCount > 0;
 		}
-
 
 	}
 }

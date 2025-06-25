@@ -36,7 +36,7 @@ namespace PrototipoBackEnd.Infrastructure.Services
 			}
 			catch (AmazonS3Exception ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
 			{
-				return null; // ou lançar uma exceção customizada
+				throw new FileNotFoundException($"O arquivo '{fileName}' não foi encontrado no bucket '{_bucketName}'.", ex);
 			}
 		}
 		public async Task<bool> FileExists(string fileName)
@@ -75,7 +75,7 @@ namespace PrototipoBackEnd.Infrastructure.Services
 				await _amazonS3.DeleteObjectAsync(_bucketName, fileName);
 				return true;
 			}
-			catch (AmazonS3Exception ex)
+			catch (AmazonS3Exception)
 			{
 				// logar erro, se necessário
 				return false;

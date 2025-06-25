@@ -2,6 +2,7 @@
 using PrototipoBackEnd.Infrastructure.Context;
 using PrototipoBackEnd.Domain.Entities;
 using MongoDB.Driver;
+using MongoDB.Bson;
 
 namespace PrototipoBackEnd.Infrastructure.Repository
 {
@@ -14,5 +15,10 @@ namespace PrototipoBackEnd.Infrastructure.Repository
 			_artesaoCollection = mongoDbContext.GetDatabase().GetCollection<Artesao>("Artesaos");
 		}
 		#endregion
+
+		public async Task<IEnumerable<Artesao>> BuscarComFiltro(FilterDefinition<Artesao> filtro)
+		{
+			return await _artesaoCollection.Find(filtro).ToListAsync();
+		}
 	}
 }

@@ -1,10 +1,12 @@
-﻿using PrototipoBackEnd.Application.Interfaces;
+﻿using PrototipoBackEnd.Domain.Interfaces.Services;
+using PrototipoBackEnd.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using PrototipoBackEnd.Application.Dtos;
 using Microsoft.AspNetCore.Mvc;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace PrototipoBackEnd.API.Controllers
 {
+	[Authorize(Policy = "Administrador")]
 	[Route("api/[controller]/[action]")]
 	[ApiController]
 	public class ArtesaoController : ControllerBase
@@ -14,29 +16,38 @@ namespace PrototipoBackEnd.API.Controllers
 		private readonly IConfiguration _configuration;
 		private readonly IArtesaoService _artesaoService;
 		private readonly ILogger<ArtesaoController> _logger;
+		private readonly IAmazonS3Service _amazonS3Service;
 
-		public ArtesaoController(IConfiguration configuration, ILogger<ArtesaoController> logger, IArtesaoService artesaoService)
+		public ArtesaoController(IConfiguration configuration, ILogger<ArtesaoController> logger, IArtesaoService artesaoService, IAmazonS3Service amazonS3Service)
 		{
+			_amazonS3Service = amazonS3Service;
 			_configuration = configuration;
 			_artesaoService = artesaoService;
 			_logger = logger;
 		}
 
 		#endregion
+
 		private static List<ArtesaoDto> artesaos = new List<ArtesaoDto>();
 
 		#region Usuário CRUD PADRÃO
 
 		// READ - Buscar todos os Artesãos (GET)
+		[AllowAnonymous]
 		[HttpGet]
-		public async Task<ActionResult<List<ArtesaoDto>>> BuscarTodos()
+		public async Task<ActionResult<List<ArtesaoDto>>> BuscarTodos(
+			[FromQuery] string? nome = null,
+			[FromQuery] string? nichoAtuacao = null,
+			[FromQuery] bool? receberEncomendas = null,
+			[FromQuery] bool? enviaEncomendas = null)
 		{
-			List<ArtesaoDto> artesaos = await _artesaoService.BuscarTodos();
-
+			// Sempre chama o método com filtro, mesmo que todos os parâmetros sejam nulos
+			var artesaos = await _artesaoService.BuscarComFiltro(nome, nichoAtuacao, receberEncomendas, enviaEncomendas);
 			return Ok(artesaos);
 		}
 
 		// READ - Buscar Artesão por id (GET) {id}
+		[AllowAnonymous]
 		[HttpGet("{id}")]
 		public async Task<ActionResult<ArtesaoDto>> BuscarPorId(string id)
 		{
@@ -52,7 +63,7 @@ namespace PrototipoBackEnd.API.Controllers
 				}
 
 				// Retorna OK com os dados do Artesão encontrado
-				return Ok(new { message = "Usuário encontrado", data = artesao });
+				return Ok(new { message = "Artesão encontrado", data = artesao });
 			}
 			catch (Exception ex)
 			{
@@ -65,15 +76,20 @@ namespace PrototipoBackEnd.API.Controllers
 		[HttpPost]
 		public async Task<ActionResult<ArtesaoDto>> Adicionar([FromForm] ArtesaoDto dto, IFormFile imagem)
 		{
-			await _artesaoService.Adicionar(dto);
-
-			//return CreatedAtAction(nameof(AdicionarArtesao), new { dto }, dto);
-			return Ok(dto);
+			try
+			{
+				var result = await _artesaoService.Adicionar(dto, imagem);
+				return Ok(result);
+			}
+			catch (Exception ex)
+			{
+				return BadRequest(new { message = ex.Message });
+			}
 		}
 
 		// UPDATE - Atualizar um Artesão existente (PUT)
 		[HttpPut("{id}")]
-		public async Task<ActionResult<ArtesaoDto>> Atualizar([FromForm] ArtesaoDto dto, string id)
+		public async Task<ActionResult<ArtesaoDto>> Atualizar([FromForm] ArtesaoDto dto, string id, IFormFile? imagem = null)
 		{
 			// Valida o modelo
 			if (!ModelState.IsValid)
@@ -83,7 +99,7 @@ namespace PrototipoBackEnd.API.Controllers
 
 			try
 			{
-				await _artesaoService.Atualizar(dto, id);
+				await _artesaoService.Atualizar(dto, id, imagem);
 				return Ok(new { message = "Usuário atualizado com sucesso" });
 			}
 			catch (Exception ex)
@@ -112,5 +128,10 @@ namespace PrototipoBackEnd.API.Controllers
 		}
 
 		#endregion
+
+		#region Filtros 
+
+		#endregion
+
 	}
 }

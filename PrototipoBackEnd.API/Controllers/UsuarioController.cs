@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using PrototipoBackEnd.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using PrototipoBackEnd.Application.Dtos;
-using PrototipoBackEnd.Application.Interfaces;
-using PrototipoBackEnd.Domain.Entities;
+using Microsoft.AspNetCore.Mvc;
 
 namespace PrototipoBackEnd.API.Controllers
 {
+	[Authorize(Policy = "Administrador")]
 	[Route("api/[controller]/[action]")]
 	[ApiController]
 	public class UsuarioController : ControllerBase
@@ -64,7 +65,7 @@ namespace PrototipoBackEnd.API.Controllers
 
 		// CREATE - Adicionar um novo usuário (POST)
 		[HttpPost]
-		public async Task<ActionResult<UsuarioDto>> Adicionar([FromBody] UsuarioDto dto)
+		public async Task<ActionResult<UsuarioDto>> Adicionar([FromForm] UsuarioDto dto)
 		{
 			await _usuarioService.Adicionar(dto);
 
@@ -101,7 +102,7 @@ namespace PrototipoBackEnd.API.Controllers
 			// Simula uma operação assíncrona
 			await Task.Delay(100);
 
-			var usuarioId = await _usuarioService.BuscarPorId(id); // Método assíncrono para buscar o usuário
+			var usuarioId = await _usuarioService.BuscarPorId(id);
 
 			if (usuarioId == null)
 			{

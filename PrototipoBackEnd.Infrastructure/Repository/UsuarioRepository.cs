@@ -15,6 +15,12 @@ namespace PrototipoBackEnd.Infrastructure.Repository
 		}
 		#endregion
 
+		public async Task<Usuario> ObterUsuarioPorEmail(string email)
+		{
+			return await _usuarioCollection
+						.Find(u => u.Email.ToLower() == email.ToLower())
+						.FirstOrDefaultAsync();
+		}
 
 	}
 }
