@@ -15,4 +15,8 @@
 	  <ProjectReference Include="..\PrototipoBackEnd.Application\PrototipoBackEnd.Application.csproj" />
 	  <ProjectReference Include="..\PrototipoBackEnd.Infrastructure\PrototipoBackEnd.Infrastructure.csproj" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="wwwroot\" />
+	</ItemGroup>
 </Project>
