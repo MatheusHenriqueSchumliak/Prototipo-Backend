@@ -4,8 +4,7 @@ using PrototipoBackEnd.Application.Dtos;
 using Microsoft.AspNetCore.Mvc;
 
 namespace PrototipoBackEnd.API.Controllers
-{
-	[Authorize(Policy = "Administrador")]
+{	
 	[Route("api/[controller]/[action]")]
 	[ApiController]
 	public class UsuarioController : ControllerBase
