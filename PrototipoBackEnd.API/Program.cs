@@ -31,22 +31,22 @@ namespace PrototipoBackEnd.API
 						ClockSkew = TimeSpan.Zero // ⬅️ IMPORTANTE para não permitir tolerância padrão de 5 minutos!
 					};
 
-					options.Events = new JwtBearerEvents
-					{
-						OnTokenValidated = context =>
-						{
-							// Verifica se o token possui a claim de role "Administrador"
-							var hasAdminRole = context.Principal?.Identity is ClaimsIdentity claimsIdentity &&
-											   claimsIdentity.HasClaim(c => c.Type == ClaimTypes.Role && c.Value == "Administrador");
+					//options.Events = new JwtBearerEvents
+					//{
+					//	OnTokenValidated = context =>
+					//	{
+					//		// Verifica se o token possui a claim de role "Administrador"
+					//		var hasAdminRole = context.Principal?.Identity is ClaimsIdentity claimsIdentity &&
+					//						   claimsIdentity.HasClaim(c => c.Type == ClaimTypes.Role && c.Value == "Administrador");
 
-							// Se quiser aplicar isso globalmente, mantenha. Se for só para certas rotas, remova.
-							// Aqui falha o token se não for administrador
-							if (!hasAdminRole)
-								context.Fail("Unauthorized - Apenas administradores podem acessar.");
+					//		// Se quiser aplicar isso globalmente, mantenha. Se for só para certas rotas, remova.
+					//		// Aqui falha o token se não for administrador
+					//		if (!hasAdminRole)
+					//			context.Fail("Unauthorized - Apenas administradores podem acessar.");
 
-							return Task.CompletedTask;
-						}
-					};
+					//		return Task.CompletedTask;
+					//	}
+					//};
 				});
 
 			builder.Services.AddAuthorization(options =>
@@ -65,6 +65,11 @@ namespace PrototipoBackEnd.API
 			var app = builder.Build();
 
 			app.UseCustomMiddlewares();
+
+			app.UseAuthentication();
+			app.UseAuthorization();
+
+			app.MapGet("/", () => "PrototipoBackEnd API rodando no Azure 🚀");
 
 			app.MapControllers();
 
