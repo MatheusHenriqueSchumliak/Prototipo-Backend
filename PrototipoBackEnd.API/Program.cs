@@ -14,6 +14,8 @@ namespace PrototipoBackEnd.API
 		{
 			var builder = WebApplication.CreateBuilder(args);
 
+			Console.WriteLine("MONGO: " + (builder.Configuration["MongoDbSettings:ConnectionString"] ?? "NULL"));
+
 			builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 				.AddJwtBearer(options =>
 				{

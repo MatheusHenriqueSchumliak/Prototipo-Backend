@@ -1,3 +1,4 @@
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace PrototipoBackEnd.API.Controllers
@@ -29,5 +30,12 @@ namespace PrototipoBackEnd.API.Controllers
             })
             .ToArray();
         }
-    }
+
+		[AllowAnonymous]
+		[HttpGet]
+		public IActionResult Teste()
+		{
+			return Ok("API viva 🚀");
+		}
+	}
 }
