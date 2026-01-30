@@ -32,7 +32,7 @@ namespace PrototipoBackEnd.API.Controllers
         }
 
 		[AllowAnonymous]
-		[HttpGet]
+		[HttpGet("Teste")]
 		public IActionResult Teste()
 		{
 			return Ok("API viva 🚀");
