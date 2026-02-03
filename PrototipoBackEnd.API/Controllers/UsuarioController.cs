@@ -4,9 +4,9 @@ using PrototipoBackEnd.Application.Dtos;
 using Microsoft.AspNetCore.Mvc;
 
 namespace PrototipoBackEnd.API.Controllers
-{	
-	[Route("api/[controller]/[action]")]
+{
 	[ApiController]
+	[Route("[controller]")]
 	public class UsuarioController : ControllerBase
 	{
 		#region Construtor 

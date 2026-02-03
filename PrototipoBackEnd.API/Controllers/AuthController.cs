@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace PrototipoBackEnd.API.Controllers
 {
-	[Route("api/[controller]/[action]")]
 	[ApiController]
+	[Route("[controller]")]
 	public class AuthController : ControllerBase
 	{
 		#region Construtor

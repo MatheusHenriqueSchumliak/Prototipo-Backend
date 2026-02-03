@@ -6,9 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace PrototipoBackEnd.API.Controllers
 {
-	[Authorize(Policy = "Administrador")]
-	[Route("api/[controller]/[action]")]
 	[ApiController]
+	[Route("[controller]")]
 	public class ArtesanatoController : ControllerBase
 	{
 		#region Construtor 
