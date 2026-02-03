@@ -33,7 +33,7 @@ namespace PrototipoBackEnd.API.Controllers
 
 		// READ - Buscar todos os Artesãos (GET)
 		[AllowAnonymous]
-		[HttpGet("BuscarTodos")]
+		[HttpGet]
 		public async Task<ActionResult<List<ArtesaoDto>>> BuscarTodos(
 			[FromQuery] string? nome = null,
 			[FromQuery] string? nichoAtuacao = null,
