@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace PrototipoBackEnd.API.Controllers
 {
 	[ApiController]
-	[Route("[controller]/[Action]")]
+	[Route("[controller]")]
 	public class ArtesaoController : ControllerBase
 	{
 		#region Construtor 
@@ -33,7 +33,7 @@ namespace PrototipoBackEnd.API.Controllers
 
 		// READ - Buscar todos os Artesãos (GET)
 		[AllowAnonymous]
-		[HttpGet]
+		[HttpGet("BuscarTodos")]
 		public async Task<ActionResult<List<ArtesaoDto>>> BuscarTodos(
 			[FromQuery] string? nome = null,
 			[FromQuery] string? nichoAtuacao = null,
