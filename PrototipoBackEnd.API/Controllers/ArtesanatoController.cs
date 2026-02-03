@@ -33,7 +33,7 @@ namespace PrototipoBackEnd.API.Controllers
 
 		// READ - Buscar todos os Artesanatos (GET)
 		[AllowAnonymous]
-		[HttpGet]
+		[HttpGet("BuscarTodos")]
 		public async Task<ActionResult<List<ArtesanatoDto>>> BuscarTodos()
 		{
 			List<ArtesanatoDto> artesanatos = await _artesanatoService.BuscarTodos();
