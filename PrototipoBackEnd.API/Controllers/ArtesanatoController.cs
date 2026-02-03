@@ -68,7 +68,7 @@ namespace PrototipoBackEnd.API.Controllers
 		}
 
 		[AllowAnonymous]
-		[HttpGet("{artesaoId}")]
+		[HttpGet("PorArtesao/{artesaoId}")]
 		public async Task<ActionResult<ArtesanatoDto>> BuscarPorArtesaoId(string artesaoId)
 		{
 			try
@@ -93,7 +93,7 @@ namespace PrototipoBackEnd.API.Controllers
 		}
 
 		[AllowAnonymous]
-		[HttpGet("{artesaoId}")]
+		[HttpGet("TodosPorArtesao/{artesaoId}")]
 		public async Task<ActionResult<ArtesanatoDto>> BuscarTodosPorArtesaoId(string artesaoId)
 		{
 			try

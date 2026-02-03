@@ -66,6 +66,18 @@ namespace PrototipoBackEnd.API
 
 			var app = builder.Build();
 
+			// Habilita Swagger também quando a chave EnableSwaggerInProduction = true
+			var enableSwaggerInProd = builder.Configuration.GetValue<bool>("EnableSwaggerInProduction");
+			if (builder.Environment.IsDevelopment() || enableSwaggerInProd)
+			{
+				app.UseSwagger();
+				app.UseSwaggerUI(c =>
+				{
+					c.SwaggerEndpoint("/swagger/v1/swagger.json", "PrototipoBackEnd API V1");
+					// se quiser o UI na raiz, descomente:
+					// c.RoutePrefix = string.Empty;
+				});
+			}
 			app.UseCustomMiddlewares();
 
 			app.UseAuthentication();
