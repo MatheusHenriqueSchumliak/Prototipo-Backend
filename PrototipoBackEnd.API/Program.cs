@@ -60,9 +60,10 @@ namespace PrototipoBackEnd.API
 			// Adiciona a injeção de dependência da camada Infrastructure
 			builder.Services
 				.AddInfrastructure(builder.Configuration)
-				.AddConfiguredControllers()
 				.AddSwaggerDocumentation()
 				.AddFrontendCors();
+
+			builder.Services.AddControllers();
 
 			var app = builder.Build();
 
