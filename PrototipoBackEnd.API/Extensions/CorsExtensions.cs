@@ -7,11 +7,16 @@
 			// Configuração de CORS
 			services.AddCors(options =>
 			{
-				options.AddPolicy("PermitirFrontend", policy =>
+				options.AddPolicy("Frontend", policy =>
 				{
-					policy.WithOrigins("http://localhost:5173") // Porta onde o React roda
-						  .AllowAnyHeader()
-						  .AllowAnyMethod();
+					policy
+						.WithOrigins(
+							"http://localhost:5173",
+							"https://prototipo-frontend-git-main-mhs421.vercel.app",
+							"https://prototipo-frontend-git-feature-mhs421.vercel.app"
+						)
+						.AllowAnyHeader()
+						.AllowAnyMethod();
 				});
 			});
 

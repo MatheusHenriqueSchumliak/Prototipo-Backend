@@ -83,6 +83,8 @@ namespace PrototipoBackEnd.API
 
 			app.UseRouting();
 
+			app.UseCors("Frontend");
+
 			app.UseAuthentication();
 			app.UseAuthorization();
 
