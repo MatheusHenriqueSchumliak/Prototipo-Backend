@@ -22,7 +22,8 @@
 							return false;
 						})
 						.AllowAnyHeader()
-						.AllowAnyMethod();
+						.AllowAnyMethod()
+						.AllowCredentials();
 				});
 			});
 
