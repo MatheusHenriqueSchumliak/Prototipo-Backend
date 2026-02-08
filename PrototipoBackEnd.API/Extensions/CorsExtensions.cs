@@ -10,11 +10,17 @@
 				options.AddPolicy("Frontend", policy =>
 				{
 					policy
-						.WithOrigins(
-							"http://localhost:5173",
-							"https://prototipo-frontend-git-main-mhs421.vercel.app",
-							"https://prototipo-frontend-git-feature-mhs421.vercel.app"
-						)
+						.SetIsOriginAllowed(origin =>
+						{
+							// Localhost para desenvolvimento
+							if (origin.StartsWith("http://localhost")) return true;
+
+							// Qualquer subdomínio do Vercel do seu projeto
+							if (origin.Contains("prototipo-frontend") && origin.EndsWith(".vercel.app"))
+								return true;
+
+							return false;
+						})
 						.AllowAnyHeader()
 						.AllowAnyMethod();
 				});

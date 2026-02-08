@@ -55,7 +55,8 @@ namespace PrototipoBackEnd.API
 			{
 				options.AddPolicy("Administrador", policy => policy.RequireRole("Administrador"));
 				//options.AddPolicy("Usuario", policy => policy.RequireRole("Usuario"));
-			}); 
+			});
+
 			builder.Services.AddHttpContextAccessor();
 			// Adiciona a injeção de dependência da camada Infrastructure
 			builder.Services
@@ -79,11 +80,12 @@ namespace PrototipoBackEnd.API
 					// c.RoutePrefix = string.Empty;
 				});
 			}
+
 			app.UseCustomMiddlewares();
 
-			app.UseRouting();
-
 			app.UseCors("Frontend");
+
+			app.UseRouting();
 
 			app.UseAuthentication();
 			app.UseAuthorization();
