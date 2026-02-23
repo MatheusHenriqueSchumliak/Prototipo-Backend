@@ -17,7 +17,7 @@ namespace PrototipoBackEnd.API.Controllers
 		}
 		#endregion
 
-		[HttpPost]
+		[HttpPost("login")]
 		public async Task<IActionResult> Login([FromBody] LoginRequestDto dto)
 		{
 			try

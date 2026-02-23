@@ -361,3 +361,7 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Ignore environment and app settings with secrets
+PrototipoBackEnd.API/appsettings.json
+PrototipoBackEnd.API/appsettings.*.json
