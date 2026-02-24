@@ -29,7 +29,7 @@ namespace PrototipoBackEnd.API.Controllers
 		#region Usuário CRUD PADRÃO
 
 		// READ - Buscar todos os usuários (GET)
-		[HttpGet]
+		[HttpGet("BuscarTodos")]
 		public async Task<ActionResult<List<UsuarioDto>>> BuscarTodos()
 		{
 			List<UsuarioDto> usuarios = await _usuarioService.BuscarTodos();
@@ -38,7 +38,7 @@ namespace PrototipoBackEnd.API.Controllers
 		}
 
 		// READ - Buscar usuário por id (GET) {id}
-		[HttpGet("{id}")]
+		[HttpGet("BuscarPorId/{id}")]
 		public async Task<ActionResult<UsuarioDto>> BuscarPorId(string id)
 		{
 			try
@@ -63,7 +63,7 @@ namespace PrototipoBackEnd.API.Controllers
 		}
 
 		// CREATE - Adicionar um novo usuário (POST)
-		[HttpPost]
+		[HttpPost("Adicionar")]
 		public async Task<ActionResult<UsuarioDto>> Adicionar([FromForm] UsuarioDto dto)
 		{
 			await _usuarioService.Adicionar(dto);
@@ -74,7 +74,7 @@ namespace PrototipoBackEnd.API.Controllers
 		}
 
 		// UPDATE - Atualizar um usuário existente (PUT)
-		[HttpPut("{id}")]
+		[HttpPut("Atualizar/{id}")]
 		public async Task<ActionResult<UsuarioDto>> Atualizar([FromForm] UsuarioDto dto, string id)
 		{
 			// Valida o modelo
@@ -95,7 +95,7 @@ namespace PrototipoBackEnd.API.Controllers
 		}
 
 		// DELETE - Excluir um usuário existente (DELETE)
-		[HttpDelete("{id}")]
+		[HttpDelete("Excluir/{id}")]
 		public async Task<ActionResult<UsuarioDto>> Excluir(string id)
 		{
 			// Simula uma operação assíncrona

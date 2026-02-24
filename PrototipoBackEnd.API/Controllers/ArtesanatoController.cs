@@ -43,7 +43,7 @@ namespace PrototipoBackEnd.API.Controllers
 
 		// READ - Buscar Artesanato por id (GET) {id}
 		[AllowAnonymous]
-		[HttpGet("{id}")]
+		[HttpGet("BuscarPorId/{id}")]
 		public async Task<ActionResult<ArtesanatoDto>> BuscarPorId(string id)
 		{
 			try
@@ -118,7 +118,7 @@ namespace PrototipoBackEnd.API.Controllers
 		}
 
 		// CREATE - Adicionar um novo Artesanato (POST)
-		[HttpPost]
+		[HttpPost("Adicionar")]
 		public async Task<ActionResult<ArtesanatoDto>> Adicionar([FromForm] ArtesanatoDto dto, List<IFormFile> imagem)
 		{
 			try
@@ -133,7 +133,7 @@ namespace PrototipoBackEnd.API.Controllers
 		}
 
 		// UPDATE - Atualizar um Artesanato existente (PUT)
-		[HttpPut("{id}")]
+		[HttpPut("Atualizar/{id}")]
 		public async Task<ActionResult<ArtesanatoDto>> Atualizar([FromForm] ArtesanatoDto dto, string id)
 		{
 			// Valida o modelo
@@ -154,7 +154,7 @@ namespace PrototipoBackEnd.API.Controllers
 		}
 
 		// DELETE - Excluir um Artesanato existente (DELETE)
-		[HttpDelete("{id}")]
+		[HttpDelete("Excluir/{id}")]
 		public async Task<ActionResult<ArtesanatoDto>> Excluir(string id)
 		{
 			// Simula uma operação assíncrona
