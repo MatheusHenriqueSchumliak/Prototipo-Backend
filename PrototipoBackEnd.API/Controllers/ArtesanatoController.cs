@@ -27,8 +27,6 @@ namespace PrototipoBackEnd.API.Controllers
 
 		#endregion
 
-		private static List<ArtesanatoDto> artesanatos = new List<ArtesanatoDto>();
-
 		#region Usuário CRUD PADRÃO
 
 		// READ - Buscar todos os Artesanatos (GET)

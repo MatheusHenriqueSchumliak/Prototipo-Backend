@@ -24,8 +24,6 @@ namespace PrototipoBackEnd.API.Controllers
 
 		#endregion
 
-		private static List<UsuarioDto> usuarios = new List<UsuarioDto>();
-
 		#region Usuário CRUD PADRÃO
 
 		// READ - Buscar todos os usuários (GET)
