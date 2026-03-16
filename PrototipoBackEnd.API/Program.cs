@@ -77,7 +77,11 @@ namespace PrototipoBackEnd.API
 				{
 					c.SwaggerEndpoint("/swagger/v1/swagger.json", "PrototipoBackEnd API V1");
 					// se quiser o UI na raiz, descomente:
-					// c.RoutePrefix = string.Empty;
+					//c.RoutePrefix = string.Empty;
+
+					// Remove/oculta a seção "Models" (Schemas) do Swagger UI
+					c.DefaultModelsExpandDepth(-1);    // oculta o painel de Schemas
+					c.DefaultModelExpandDepth(-1);     // evita expansão automática de modelos
 				});
 			}
 
