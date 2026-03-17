@@ -31,9 +31,12 @@ namespace PrototipoBackEnd.Infrastructure.IoC
 
 			#region AutoMapper Configuração
 
-			services.AddAutoMapper(typeof(UsuarioProfile).Assembly);
-			services.AddAutoMapper(typeof(ArtesaoProfile).Assembly);
-			services.AddAutoMapper(typeof(ArtesanatoProfile).Assembly);
+			services.AddAutoMapper(cfg =>
+			{
+				cfg.AddProfile<UsuarioProfile>();
+				cfg.AddProfile<ArtesaoProfile>();
+				cfg.AddProfile<ArtesanatoProfile>();
+			});
 
 			#endregion
 
