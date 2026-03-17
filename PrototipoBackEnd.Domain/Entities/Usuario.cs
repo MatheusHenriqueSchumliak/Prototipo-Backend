@@ -20,7 +20,7 @@ public class Usuario
 
 	public Usuario() { } // para o Mongo ou ORM
 
-	public static Usuario Criar(string nome, string email, string senhaHash, Enum role, bool isAtivo)
+	public static Usuario Criar(string nome, string email, string senhaHash, Enum role, bool ativo)
 	{
 		if (string.IsNullOrWhiteSpace(nome)) throw new ArgumentException("Nome vazio.");
 		if (string.IsNullOrWhiteSpace(email)) throw new ArgumentException("Email vazio.");
@@ -33,8 +33,7 @@ public class Usuario
 			Email = email.Trim().ToLower(),
 			SenhaHash = senhaHash,
 			Role = (UsuarioEnum)role,
-			IsAtivo = true
-
+			IsAtivo = ativo
 		};
 	}
 

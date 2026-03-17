@@ -6,118 +6,113 @@ using PrototipoBackEnd.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using AutoMapper;
 
-namespace PrototipoBackEnd.Application.Services
+namespace PrototipoBackEnd.Application.Services;
+
+public class ArtesanatoService(
+	IArtesanatoRepository artesanatoRepository,
+	IAmazonS3Service amazonS3Service,
+	IMapper mapper
+) : IArtesanatoService
 {
-	public class ArtesanatoService : IArtesanatoService
+	private readonly IArtesanatoRepository _artesanatoRepository = artesanatoRepository;
+	private readonly IAmazonS3Service _amazonS3Service = amazonS3Service;
+	private readonly IMapper _mapper = mapper;
+
+	public async Task<List<ArtesanatoDto>> BuscarTodos()
 	{
-		#region Construtor
-		private readonly IArtesanatoRepository _artesanatoRepository;
-		private readonly IAmazonS3Service _amazonS3Service;
-		private readonly IMapper _mapper;
-		public ArtesanatoService(IArtesanatoRepository artesanatoRepository, IAmazonS3Service amazonS3Service, IMapper mapper)
+		var artesanatos = await _artesanatoRepository.BuscarTodos();
+		return _mapper.Map<List<ArtesanatoDto>>(artesanatos);
+	}
+	public async Task<ArtesanatoDto> BuscarPorId(string id)
+	{
+		try
 		{
-			_artesanatoRepository = artesanatoRepository;
-			_amazonS3Service = amazonS3Service;
-			_mapper = mapper;
-		}
-		#endregion
-
-		public async Task<List<ArtesanatoDto>> BuscarTodos()
-		{
-			var artesanatos = await _artesanatoRepository.BuscarTodos();
-			return _mapper.Map<List<ArtesanatoDto>>(artesanatos);
-		}
-		public async Task<ArtesanatoDto> BuscarPorId(string id)
-		{
-			try
-			{
-				var artesanato = await _artesanatoRepository.BuscarPorId(id);
-				if (artesanato == null)
-					throw new Exception($"Artesato não foi encontrado!");
-
-				var dto = _mapper.Map<ArtesanatoDto>(artesanato);
-
-				return dto;
-			}
-			catch (Exception)
-			{
+			var artesanato = await _artesanatoRepository.BuscarPorId(id);
+			if (artesanato == null)
 				throw new Exception($"Artesato não foi encontrado!");
-			}
+
+			var dto = _mapper.Map<ArtesanatoDto>(artesanato);
+
+			return dto;
 		}
-		public async Task<ArtesanatoDto> BuscarPorArtesaoId(string artesaoId)
+		catch (Exception)
 		{
-			try
-			{
-				var artesanato = await _artesanatoRepository.BuscarPorArtesaoId(artesaoId);
-				if (artesanato == null)
-					throw new Exception($"Artesato não foi encontrado!");
-
-				var dto = _mapper.Map<ArtesanatoDto>(artesanato);
-
-				return dto;
-			}
-			catch (Exception)
-			{
+			throw new Exception($"Artesato não foi encontrado!");
+		}
+	}
+	public async Task<ArtesanatoDto> BuscarPorArtesaoId(string artesaoId)
+	{
+		try
+		{
+			var artesanato = await _artesanatoRepository.BuscarPorArtesaoId(artesaoId);
+			if (artesanato == null)
 				throw new Exception($"Artesato não foi encontrado!");
-			}
+
+			var dto = _mapper.Map<ArtesanatoDto>(artesanato);
+
+			return dto;
 		}
-		public async Task<List<ArtesanatoDto>> BuscarTodosPorArtesaoId(string artesaoId)
+		catch (Exception)
 		{
-			try
-			{
-				var artesanatos = await _artesanatoRepository.BuscarTodosPorArtesaoId(artesaoId);
-				if (artesanatos == null || !artesanatos.Any())
-					return new List<ArtesanatoDto>(); // Retorna lista vazia em vez de exception
-
-				var dtos = _mapper.Map<List<ArtesanatoDto>>(artesanatos);
-				return dtos;
-			}
-			catch (Exception)
-			{
-				throw new Exception($"Erro ao buscar artesanatos!");
-			}
+			throw new Exception($"Artesato não foi encontrado!");
 		}
-		public async Task<ArtesanatoDto> Adicionar(ArtesanatoDto dto, List<IFormFile> imagem)
+	}
+	public async Task<List<ArtesanatoDto>> BuscarTodosPorArtesaoId(string artesaoId)
+	{
+		try
 		{
-			if (imagem != null && imagem.Count > 0)
+			var artesanatos = await _artesanatoRepository.BuscarTodosPorArtesaoId(artesaoId);
+			if (artesanatos == null || artesanatos.Count == 0)
+				return new List<ArtesanatoDto>(); // Retorna lista vazia em vez de exception
+
+			var dtos = _mapper.Map<List<ArtesanatoDto>>(artesanatos);
+			return dtos;
+		}
+		catch (Exception)
+		{
+			throw new Exception($"Erro ao buscar artesanatos!");
+		}
+	}
+	public async Task<ArtesanatoDto> Adicionar(ArtesanatoDto dto, List<IFormFile> imagem)
+	{
+		if (imagem != null && imagem.Count > 0)
+		{
+			var imagemUrls = new List<string>();
+
+			foreach (var img in imagem)
 			{
-				var imagemUrls = new List<string>();
-
-				foreach (var img in imagem)
-				{
-					using var stream = img.OpenReadStream();
-					var imagemUrl = await _amazonS3Service.Upload(stream, img.FileName, img.ContentType);
-					imagemUrls.Add(imagemUrl);
-				}
-
-				dto.ImagemUrl = imagemUrls; // Adiciona todas as URLs como lista  
+				using var stream = img.OpenReadStream();
+				var imagemUrl = await _amazonS3Service.Upload(stream, img.FileName, img.ContentType);
+				imagemUrls.Add(imagemUrl);
 			}
 
-			var entidade = _mapper.Map<Artesanato>(dto); // Mapeia o DTO para a entidade de domínio  
-
-			await _artesanatoRepository.Adicionar(entidade); // Salva no banco de dados (ou MongoDB)  
-
-			return _mapper.Map<ArtesanatoDto>(entidade); // Retorna o DTO já com ID gerado, etc.  
+			dto.ImagemUrl = imagemUrls; // Adiciona todas as URLs como lista  
 		}
-		public async Task Atualizar(ArtesanatoDto dto, string id)
+
+		var entidade = _mapper.Map<Artesanato>(dto); // Mapeia o DTO para a entidade de domínio  
+
+		await _artesanatoRepository.Adicionar(entidade); // Salva no banco de dados (ou MongoDB)  
+
+		return _mapper.Map<ArtesanatoDto>(entidade); // Retorna o DTO já com ID gerado, etc.  
+	}
+	public async Task Atualizar(ArtesanatoDto dto, string id)
+	{
+		if (id == null)
+			throw new Exception($"Artesão para o ID: {id} não foi encontrado!");
+
+		var artesanatoExistente = await _artesanatoRepository.BuscarPorId(id);
+
+		if (artesanatoExistente == null)
+			throw new Exception($"Artesão com o ID: {id} não foi encontrado!");
+	}
+	public async Task<bool> Apagar(string id)
+	{
+		if (id == null)
 		{
-			if (id == null)
-				throw new Exception($"Artesão para o ID: {id} não foi encontrado!");
-
-			var artesanatoExistente = await _artesanatoRepository.BuscarPorId(id);
-
-			if (artesanatoExistente == null)
-				throw new Exception($"Artesão com o ID: {id} não foi encontrado!");
+			throw new Exception($"Artesanato para o ID: {id} não foi encontrado!");
 		}
-		public async Task<bool> Apagar(string id)
-		{
-			if (id == null)
-			{
-				throw new Exception($"Artesanato para o ID: {id} não foi encontrado!");
-			}
 
-			await _artesanatoRepository.Deletar(id);
-			return true;
-		}
+		await _artesanatoRepository.Deletar(id);
+		return true;
 	}
 }
