@@ -1,6 +1,6 @@
 ﻿using PrototipoBackEnd.Application.Interfaces;
-using PrototipoBackEnd.Application.Dtos;
 using Microsoft.AspNetCore.Mvc;
+using PrototipoBackEnd.Application.Dtos.Auth;
 
 namespace PrototipoBackEnd.API.Controllers
 {

@@ -1,4 +1,4 @@
-﻿namespace PrototipoBackEnd.Application.Dtos
+﻿namespace PrototipoBackEnd.Application.Dtos.Artesanato
 {
 	public class MaterialDto
 	{

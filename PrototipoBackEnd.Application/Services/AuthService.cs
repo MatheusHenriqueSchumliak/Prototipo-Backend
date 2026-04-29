@@ -1,9 +1,9 @@
 ﻿using PrototipoBackEnd.Domain.Interfaces.Services;
 using PrototipoBackEnd.Application.Interfaces;
 using PrototipoBackEnd.Domain.Interfaces;
-using PrototipoBackEnd.Application.Dtos;
 using Microsoft.AspNetCore.Http;
 using System.Security.Cryptography;
+using PrototipoBackEnd.Application.Dtos.Auth;
 
 namespace PrototipoBackEnd.Application.Services
 {

@@ -1,4 +1,6 @@
-﻿namespace PrototipoBackEnd.Application.Dtos.Artesao
+﻿using PrototipoBackEnd.Application.Dtos.Pessoa;
+
+namespace PrototipoBackEnd.Application.Dtos.Artesao
 {
 	public class ArtesaoDto
 	{
