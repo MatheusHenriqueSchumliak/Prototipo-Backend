@@ -64,6 +64,7 @@ namespace PrototipoBackEnd.Infrastructure.IoC
 
 			// Aqui você pode registrar repositórios específicos  
 			services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+			services.AddScoped<IPessoaRepository, PessoaRepository>();
 			services.AddScoped<IArtesaoRepository, ArtesaoRepository>();
 			services.AddScoped<IArtesanatoRepository, ArtesanatoRepository>();
 			#endregion ---------------------------------  
@@ -71,6 +72,7 @@ namespace PrototipoBackEnd.Infrastructure.IoC
 			#region Serviços --- Injeção de dependencia  
 
 			services.AddScoped<IUsuarioService, UsuarioService>();
+			services.AddScoped<IPessoaService, PessoaService>();
 			services.AddScoped<IArtesaoService, ArtesaoService>();
 			services.AddScoped<IArtesanatoService, ArtesanatoService>();
 
