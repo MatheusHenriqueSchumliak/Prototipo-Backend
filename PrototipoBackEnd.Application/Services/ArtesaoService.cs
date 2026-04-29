@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using PrototipoBackEnd.Application.Dtos;
+using PrototipoBackEnd.Application.Dtos.Artesao;
 using PrototipoBackEnd.Application.Interfaces;
 using PrototipoBackEnd.Domain.Entities;
 using PrototipoBackEnd.Domain.Interfaces.Repositories;
@@ -70,39 +70,39 @@ namespace PrototipoBackEnd.Application.Services
 			{
 				using var stream = imagem.OpenReadStream();
 				var imagemUrl = await _amazonS3Service.Upload(stream, imagem.FileName, imagem.ContentType);
-				dto.FotoUrl = imagemUrl;
+				dto.Foto = imagemUrl;
 			}
 
 			try
 			{
 				var endereco = new Endereco(
-					dto.CEP,
-					dto.Estado,
-					dto.Cidade,
-					dto.Rua,
-					dto.Bairro,
-					dto.Numero ?? string.Empty,
-					dto.Numero,
-					dto.SemNumero
+					dto.Endereco!.CEP,
+					dto.Endereco!.Estado,
+					dto.Endereco!.Cidade,
+					dto.Endereco!.Rua,
+					dto.Endereco!.Bairro,
+					dto.Endereco!.Numero ?? string.Empty,
+					dto.Endereco!.Numero,
+					dto.Endereco!.SemNumero
 				);
 
 				var redesSociais = new RedesSociais(
-					dto.Instagram,
-					dto.Facebook
+					dto.RedesSociais.Instagram,
+					dto.RedesSociais.Facebook
 				);
 
-				var especialidade = new Especialidade(dto.NichoAtuacao!);
+				var especialidade = new Especialidade(dto.Especialidade.Itens);
 
-				var artesao = Artesao.Criar(
-					pessoaId: dto.UsuarioId,
-					nome: dto.NomeCompleto,
-					descricao: dto.DescricaoPerfil,
-					foto: dto.FotoUrl ?? string.Empty,
+				var artesao = Artesao.Criar(					
+					pessoaId: dto.PessoaId,
+					nome: dto.Nome,
+					descricao: dto.Descricao,
+					foto: dto.Foto ?? string.Empty,
 					especialidade: especialidade,
-					endereco: endereco,
+					enderecoComercial: endereco,
 					redesSociais: redesSociais,
-					recebeEncomenda: dto.ReceberEncomendas,
-					enviaEncomenda: dto.EnviaEncomendas,
+					recebeEncomenda: dto.RecebeEncomenda,
+					enviaEncomenda: dto.EnviaEncomenda,
 					localFisico: dto.LocalFisico,
 					feiraMunicipal: dto.FeiraMunicipal
 				);
@@ -137,12 +137,12 @@ namespace PrototipoBackEnd.Application.Services
 				{
 					using var stream = imagem.OpenReadStream();
 					var imagemUrl = await _amazonS3Service.Upload(stream, imagem.FileName, imagem.ContentType);
-					dto.FotoUrl = imagemUrl;
+					dto.Foto = imagemUrl;
 				}
 				else
 				{
 					// ✅ Manter a imagem existente se não foi enviada nova
-					dto.FotoUrl = artesaoExistente.Foto;
+					dto.Foto = artesaoExistente.Foto;
 				}
 
 				// ✅ Mapear os dados do DTO para a entidade existente
@@ -190,7 +190,7 @@ namespace PrototipoBackEnd.Application.Services
 			if (enviaEncomenda.HasValue)
 				filtros.Add(Builders<Artesao>.Filter.Eq(a => a.EnviaEncomenda, enviaEncomenda.Value));
 
-			FilterDefinition<Artesao> filtroFinal = filtros.Any()
+			FilterDefinition<Artesao> filtroFinal = filtros.Count > 0
 				? Builders<Artesao>.Filter.And(filtros)
 				: Builders<Artesao>.Filter.Empty;
 

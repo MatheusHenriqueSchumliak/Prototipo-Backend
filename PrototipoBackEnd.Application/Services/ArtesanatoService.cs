@@ -1,10 +1,11 @@
-﻿using PrototipoBackEnd.Domain.Interfaces.Repositories;
-using PrototipoBackEnd.Domain.Interfaces.Services;
-using PrototipoBackEnd.Application.Interfaces;
-using PrototipoBackEnd.Application.Dtos;
-using PrototipoBackEnd.Domain.Entities;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
-using AutoMapper;
+using PrototipoBackEnd.Application.Dtos;
+using PrototipoBackEnd.Application.Dtos.Artesanato;
+using PrototipoBackEnd.Application.Interfaces;
+using PrototipoBackEnd.Domain.Entities;
+using PrototipoBackEnd.Domain.Interfaces.Repositories;
+using PrototipoBackEnd.Domain.Interfaces.Services;
 
 namespace PrototipoBackEnd.Application.Services
 {
@@ -66,7 +67,7 @@ namespace PrototipoBackEnd.Application.Services
 			try
 			{
 				var artesanatos = await _artesanatoRepository.BuscarTodosPorArtesaoId(artesaoId);
-				if (artesanatos == null || !artesanatos.Any())
+				if (artesanatos == null || artesanatos.Count == 0)
 					return new List<ArtesanatoDto>(); // Retorna lista vazia em vez de exception
 
 				var dtos = _mapper.Map<List<ArtesanatoDto>>(artesanatos);
@@ -90,7 +91,7 @@ namespace PrototipoBackEnd.Application.Services
 					imagemUrls.Add(imagemUrl);
 				}
 
-				dto.ImagemUrl = imagemUrls; // Adiciona todas as URLs como lista  
+				dto.Midia = new MidiaDto { Imagens = imagemUrls }; // Adiciona todas as URLs como lista  
 			}
 
 			var entidade = _mapper.Map<Artesanato>(dto); // Mapeia o DTO para a entidade de domínio  

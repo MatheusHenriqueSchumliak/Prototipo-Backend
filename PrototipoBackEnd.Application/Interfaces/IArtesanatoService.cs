@@ -1,5 +1,5 @@
-﻿using PrototipoBackEnd.Application.Dtos;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
+using PrototipoBackEnd.Application.Dtos.Artesanato;
 
 namespace PrototipoBackEnd.Application.Interfaces
 {

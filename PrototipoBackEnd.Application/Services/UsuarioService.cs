@@ -2,9 +2,9 @@
 using PrototipoBackEnd.Application.Interfaces;
 using PrototipoBackEnd.Domain.Enumerables;
 using PrototipoBackEnd.Domain.Interfaces;
-using PrototipoBackEnd.Application.Dtos;
 using PrototipoBackEnd.Domain.Entities;
 using AutoMapper;
+using PrototipoBackEnd.Application.Dtos.Usuario;
 
 namespace PrototipoBackEnd.Application.Services
 {

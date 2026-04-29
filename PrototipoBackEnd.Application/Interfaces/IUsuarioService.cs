@@ -1,4 +1,4 @@
-﻿using PrototipoBackEnd.Application.Dtos;
+﻿using PrototipoBackEnd.Application.Dtos.Usuario;
 
 namespace PrototipoBackEnd.Application.Interfaces
 {
