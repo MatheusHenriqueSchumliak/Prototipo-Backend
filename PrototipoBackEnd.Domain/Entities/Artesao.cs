@@ -5,21 +5,21 @@ namespace PrototipoBackEnd.Domain.Entities
 {
 	public class Artesao : EntityBase
 	{
-		public string PessoaId { get; private set; }
-		public string Nome { get; private set; }
-		public string Descricao { get; private set; }
-		public string Foto { get; private set; }
+		public string PessoaId { get; private set; } = string.Empty;
+		public string Nome { get; private set; } = string.Empty;
+		public string Descricao { get; private set; } = string.Empty;
+		public string Foto { get; private set; } = string.Empty;
 		public bool RecebeEncomenda { get; private set; }
 		public bool EnviaEncomenda { get; private set; }
 		public bool LocalFisico { get; private set; }
 		public bool FeiraMunicipal { get; private set; }
-		public Especialidade Especialidade { get; private set; }
+		public Especialidade Especialidade { get; private set; } = null!;
 		public Endereco? Endereco { get; private set; }
-		public RedesSociais RedesSociais { get; private set; }
+		public RedesSociais RedesSociais { get; private set; } = null!;
 
 		public Artesao() { }
 
-		public static Artesao Criar(string pessoaId, string nome, string descricao, string nichoAtuacao, string foto, Especialidade especialidade, Endereco? endereco, RedesSociais redesSociais, bool recebeEncomenda, bool enviaEncomenda, bool localFisico, bool feiraMunicipal)
+		public static Artesao Criar(string pessoaId, string nome, string descricao, string foto, Especialidade especialidade, Endereco? endereco, RedesSociais redesSociais, bool recebeEncomenda, bool enviaEncomenda, bool localFisico, bool feiraMunicipal)
 		{
 			if (string.IsNullOrWhiteSpace(pessoaId))
 				throw new ArgumentException("PessoaId vazio.");

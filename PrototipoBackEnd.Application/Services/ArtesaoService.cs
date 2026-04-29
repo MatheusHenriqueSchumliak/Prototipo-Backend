@@ -1,12 +1,13 @@
-﻿using PrototipoBackEnd.Domain.Interfaces.Repositories;
-using PrototipoBackEnd.Domain.Interfaces.Services;
-using PrototipoBackEnd.Application.Interfaces;
-using PrototipoBackEnd.Application.Dtos;
-using PrototipoBackEnd.Domain.Entities;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
-using MongoDB.Driver;
 using MongoDB.Bson;
-using AutoMapper;
+using MongoDB.Driver;
+using PrototipoBackEnd.Application.Dtos;
+using PrototipoBackEnd.Application.Interfaces;
+using PrototipoBackEnd.Domain.Entities;
+using PrototipoBackEnd.Domain.Interfaces.Repositories;
+using PrototipoBackEnd.Domain.Interfaces.Services;
+using PrototipoBackEnd.Domain.ValueObjects;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace PrototipoBackEnd.Application.Services
@@ -74,31 +75,36 @@ namespace PrototipoBackEnd.Application.Services
 
 			try
 			{
-				var artesao = Artesao.Criar(
-					dto.UsuarioId,
-					dto.NomeCompleto,
-					dto.Idade,
-					dto.NomeArtesao,
-					dto.Telefone,
-					dto.WhatsApp,
-					dto.Email,
-					dto.Instagram,
-					dto.Facebook,
-					dto.DescricaoPerfil,
-					dto.ReceberEncomendas,
-					dto.EnviaEncomendas,
-					dto.FotoUrl,
-					dto.NichoAtuacao,
-					dto.LocalFisico,
-					dto.FeiraMunicipal,
+				var endereco = new Endereco(
 					dto.CEP,
 					dto.Estado,
 					dto.Cidade,
 					dto.Rua,
 					dto.Bairro,
-					dto.Complemento,
+					dto.Numero ?? string.Empty,
 					dto.Numero,
 					dto.SemNumero
+				);
+
+				var redesSociais = new RedesSociais(
+					dto.Instagram,
+					dto.Facebook
+				);
+
+				var especialidade = new Especialidade(dto.NichoAtuacao!);
+
+				var artesao = Artesao.Criar(
+					pessoaId: dto.UsuarioId,
+					nome: dto.NomeCompleto,
+					descricao: dto.DescricaoPerfil,
+					foto: dto.FotoUrl ?? string.Empty,
+					especialidade: especialidade,
+					endereco: endereco,
+					redesSociais: redesSociais,
+					recebeEncomenda: dto.ReceberEncomendas,
+					enviaEncomenda: dto.EnviaEncomendas,
+					localFisico: dto.LocalFisico,
+					feiraMunicipal: dto.FeiraMunicipal
 				);
 
 				await _artesaoRepository.Adicionar(artesao);
@@ -121,6 +127,9 @@ namespace PrototipoBackEnd.Application.Services
 			if (artesaoExistente == null)
 				throw new Exception($"Artesão com o ID: {id} não foi encontrado!");
 
+			if (artesaoExistente.Id != id)
+				throw new Exception("O ID do artesão não pode ser alterado.");
+
 			try
 			{
 				// ✅ Se uma nova imagem foi enviada, fazer upload
@@ -133,14 +142,11 @@ namespace PrototipoBackEnd.Application.Services
 				else
 				{
 					// ✅ Manter a imagem existente se não foi enviada nova
-					dto.FotoUrl = artesaoExistente.FotoUrl;
+					dto.FotoUrl = artesaoExistente.Foto;
 				}
 
 				// ✅ Mapear os dados do DTO para a entidade existente
 				_mapper.Map(dto, artesaoExistente);
-
-				// ✅ Manter o ID original (importante!)
-				artesaoExistente.Id = id;
 
 				// ✅ Salvar as alterações no banco
 				await _artesaoRepository.Atualizar(artesaoExistente, id);
@@ -168,21 +174,21 @@ namespace PrototipoBackEnd.Application.Services
 		#endregion
 
 
-		public async Task<List<ArtesaoDto>> BuscarComFiltro(string? nome, string? nichoAtuacao, bool? receberEncomendas, bool? enviaEncomendas)
+		public async Task<List<ArtesaoDto>> BuscarComFiltro(string? nome, string? especialidade, bool? recebeEncomenda, bool? enviaEncomenda)
 		{
 			var filtros = new List<FilterDefinition<Artesao>>();
 
 			if (!string.IsNullOrWhiteSpace(nome))
-				filtros.Add(Builders<Artesao>.Filter.Regex(a => a.NomeArtesao, new BsonRegularExpression(nome, "i")));
+				filtros.Add(Builders<Artesao>.Filter.Regex(a => a.Nome, new BsonRegularExpression(nome, "i")));
 
-			if (!string.IsNullOrWhiteSpace(nichoAtuacao))
-				filtros.Add(Builders<Artesao>.Filter.Regex(a => a.NichoAtuacao, new BsonRegularExpression(nichoAtuacao, "i")));
+			if (!string.IsNullOrWhiteSpace(especialidade))
+				filtros.Add(Builders<Artesao>.Filter.Regex(a => a.Especialidade, new BsonRegularExpression(especialidade, "i")));
 
-			if (receberEncomendas.HasValue)
-				filtros.Add(Builders<Artesao>.Filter.Eq(a => a.ReceberEncomendas, receberEncomendas.Value));
+			if (recebeEncomenda.HasValue)
+				filtros.Add(Builders<Artesao>.Filter.Eq(a => a.RecebeEncomenda, recebeEncomenda.Value));
 
-			if (enviaEncomendas.HasValue)
-				filtros.Add(Builders<Artesao>.Filter.Eq(a => a.EnviaEncomendas, enviaEncomendas.Value));
+			if (enviaEncomenda.HasValue)
+				filtros.Add(Builders<Artesao>.Filter.Eq(a => a.EnviaEncomenda, enviaEncomenda.Value));
 
 			FilterDefinition<Artesao> filtroFinal = filtros.Any()
 				? Builders<Artesao>.Filter.And(filtros)

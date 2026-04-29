@@ -58,7 +58,6 @@ namespace PrototipoBackEnd.Application.Services
 			return new LoginResponseDto
 			{
 				Token = accessToken,
-				Nome = usuario.Nome,
 				Email = usuario.Email,
 				Role = usuario.Role.ToString()
 			};

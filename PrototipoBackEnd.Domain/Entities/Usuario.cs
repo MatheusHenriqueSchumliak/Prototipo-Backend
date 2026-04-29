@@ -5,9 +5,9 @@ namespace PrototipoBackEnd.Domain.Entities
 {
 	public class Usuario : EntityBase
 	{
-		public string PessoaId { get; private set; }
-		public string Email { get; private set; }
-		public string SenhaHash { get; private set; }
+		public string PessoaId { get; private set; } = string.Empty;
+		public string Email { get; private set; } = string.Empty;
+		public string SenhaHash { get; private set; } = string.Empty;
 		public UsuarioEnum Role { get; private set; }
 
 		public Usuario() { }
@@ -26,7 +26,7 @@ namespace PrototipoBackEnd.Domain.Entities
 			email = email.Trim().ToLower();
 
 			//validação simples de email
-			if (!email.Contains("@"))
+			if (!email.Contains('@'))
 				throw new ArgumentException("Email inválido.");
 
 			return new Usuario
@@ -47,7 +47,7 @@ namespace PrototipoBackEnd.Domain.Entities
 
 			email = email.Trim().ToLower();
 
-			if (!email.Contains("@"))
+			if (!email.Contains('@'))
 				throw new ArgumentException("Email inválido.");
 
 			Email = email;

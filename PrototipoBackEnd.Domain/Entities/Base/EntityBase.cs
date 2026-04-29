@@ -2,11 +2,11 @@
 {
 	public abstract class EntityBase
 	{
-		public string Id { get; protected set; }
-		public DateTime DataCriacao { get; protected set; }
+		public string Id { get; protected set; } = Guid.NewGuid().ToString();
+		public DateTime DataCriacao { get; protected set; } = DateTime.UtcNow;
 		public DateTime? DataAtualizacao { get; protected set; }
 		public DateTime? DataRemocao { get; protected set; }
-		public bool IsAtivo { get; protected set; }
+		public bool IsAtivo { get; protected set; } = true;
 
 		public EntityBase() { }
 

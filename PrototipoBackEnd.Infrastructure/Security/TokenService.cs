@@ -23,13 +23,12 @@ namespace PrototipoBackEnd.Infrastructure.Security
 		{
 			var claims = new[]
 			{
-			new Claim(ClaimTypes.Name, usuario.Nome),
-			new Claim(ClaimTypes.Email, usuario.Email),
-			new Claim(ClaimTypes.Role, usuario.Role.ToString())
-		};
+				new Claim(ClaimTypes.Email, usuario.Email),
+				new Claim(ClaimTypes.Role, usuario.Role.ToString())
+			};
 
-			var key = new SymmetricSecurityKey(
-				Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+			var keyString = _configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key não está configurado.");
+			var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyString));
 			var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
 			var token = new JwtSecurityToken(

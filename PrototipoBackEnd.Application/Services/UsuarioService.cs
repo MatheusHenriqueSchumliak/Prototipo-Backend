@@ -56,8 +56,7 @@ namespace PrototipoBackEnd.Application.Services
 			try
 			{
 				var hash = _senhaService.CriarHash(dto.SenhaHash);
-				bool ativo = true;
-				var usuario = Usuario.Criar(dto.Nome, dto.Email, hash, UsuarioEnum.Administrador, ativo);
+				var usuario = Usuario.Criar(dto.PessoaId, dto.Email, hash, UsuarioEnum.Administrador);
 
 				await _usuarioRepository.Adicionar(usuario);
 			}

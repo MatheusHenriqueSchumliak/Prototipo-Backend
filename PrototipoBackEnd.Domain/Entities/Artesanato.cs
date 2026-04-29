@@ -5,19 +5,19 @@ namespace PrototipoBackEnd.Domain.Entities
 {
 	public class Artesanato : EntityBase
 	{
-		public string PessoaId { get; private set; }
-		public string ArtesaoId { get; private set; }
-		public string Titulo { get; private set; }
-		public string Descricao { get; private set; }
+		public string PessoaId { get; private set; } = string.Empty;
+		public string ArtesaoId { get; private set; } = string.Empty;
+		public string Titulo { get; private set; } = string.Empty;
+		public string Descricao { get; private set; } = string.Empty;
 		public int TempoCriacao { get; private set; }
 		public int Quantidade { get; private set; }
 		public decimal? Preco { get; private set; }
 		public bool TemEstoque { get; private set; }
 		public bool SomenteEncomenda { get; private set; }
 		public bool AceitaEncomenda { get; private set; }
-		public Categoria Categoria { get; private set; }
-		public Material Material { get; private set; }
-		public Midia Midia { get; private set; }
+		public Categoria Categoria { get; private set; } = null!;
+		public Material Material { get; private set; } = null!;
+		public Midia Midia { get; private set; } = default!;
 
 		public Artesanato() { }
 

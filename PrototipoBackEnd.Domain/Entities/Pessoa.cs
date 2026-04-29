@@ -5,9 +5,9 @@ namespace PrototipoBackEnd.Domain.Entities
 {
 	public class Pessoa : EntityBase
 	{
-		public string NomeCompleto { get; private set; }
+		public string NomeCompleto { get; private set; } = string.Empty;
 		public DateTime DataNascimento { get; private set; }
-		public Contato Contato { get; private set; }
+		public Contato Contato { get; private set; } = null!;
 		public bool TemUsuario { get; private set; }
 		public bool EhArtesao { get; private set; }
 		public Pessoa() { }

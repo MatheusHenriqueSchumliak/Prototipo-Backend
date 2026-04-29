@@ -2,7 +2,7 @@
 {
 	public class ArtesaoDto
 	{
-		public string Id { get; set; }
+		public required string Id { get; set; }
 		public required string UsuarioId { get; set; }
 		public string NomeCompleto { get; set; } = null!;
 		public int Idade { get; set; }
@@ -17,7 +17,7 @@
 		public bool ReceberEncomendas { get; set; } = false;
 		public bool EnviaEncomendas { get; set; } = false;
 		public string? FotoUrl { get; set; } = null!;
-		public string NichoAtuacao { get; set; } = null!;
+		public List<string>? NichoAtuacao { get; set; } = new();
 
 		public bool LocalFisico { get; set; } = false;
 		public bool FeiraMunicipal { get; set; } = false;
