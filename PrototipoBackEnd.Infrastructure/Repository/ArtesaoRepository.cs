@@ -10,9 +10,13 @@ namespace PrototipoBackEnd.Infrastructure.Repository
 	{
 		#region Construtor
 		private readonly IMongoCollection<Artesao> _artesaoCollection;
-		public ArtesaoRepository(MongoDbContext mongoDbContext) : base(mongoDbContext)
+		public ArtesaoRepository(IMongoDatabase database, MongoDbContext mongoDbContext) : base(mongoDbContext)
 		{
 			_artesaoCollection = mongoDbContext.GetDatabase().GetCollection<Artesao>("Artesaos");
+		}
+
+		public ArtesaoRepository(IMongoDatabase database, string collectionName) : base(database, collectionName)
+		{
 		}
 		#endregion
 

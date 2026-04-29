@@ -9,7 +9,7 @@ using PrototipoBackEnd.Domain.Interfaces.Repositories;
 using PrototipoBackEnd.Domain.Interfaces.Services;
 using Xunit;
 
-namespace PrototipoBackEnd.UnitTests.Services;
+namespace PrototipoBackEnd.UnitTests.Unit.Services;
 
 public class ArtesanatoServiceTest
 {

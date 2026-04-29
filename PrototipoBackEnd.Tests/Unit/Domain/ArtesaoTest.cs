@@ -3,7 +3,7 @@ using PrototipoBackEnd.Domain.Entities;
 using PrototipoBackEnd.Domain.Enumerables;
 using Xunit;
 
-namespace PrototipoBackEnd.UnitTests.Domain;
+namespace PrototipoBackEnd.UnitTests.Unit.Domain;
 
 public class ArtesaoTest
 {

@@ -194,6 +194,59 @@ public class Artesanato
 		};
 	}
 
+	public static Artesanato Atualizar(
+	Artesanato existente,
+	string? usuarioId,
+	string? artesaoId,
+	IEnumerable<string>? imagemUrl,
+	bool? sobEncomenda,
+	bool? aceitaEncomenda,
+	IEnumerable<string>? categoriaTags,
+	string? tituloArtesanato,
+	decimal? preco,
+	int? quantidadeArtesanato,
+	string? descricaoArtesanato,
+	string? materiaisUtilizados,
+	DateTime? dataCriacao,
+	int? tempoCriacaoHr,
+	Artesao? artesao)
+	{
+		// Atualiza apenas os campos informados (padrão PATCH)
+		return Criar(
+			existente.Id,
+			usuarioId ?? existente.UsuarioId,
+			artesaoId ?? existente.ArtesaoId,
+			imagemUrl ?? existente.ImagemUrl,
+			sobEncomenda ?? existente.SobEncomenda,
+			aceitaEncomenda ?? existente.AceitaEncomenda,
+			categoriaTags ?? existente.CategoriaTags,
+			tituloArtesanato ?? existente.TituloArtesanato,
+			preco ?? existente.Preco,
+			quantidadeArtesanato ?? existente.QuantidadeArtesanato,
+			descricaoArtesanato ?? existente.DescricaoArtesanato,
+			materiaisUtilizados ?? existente.MateriaisUtilizados,
+			dataCriacao ?? existente.DataCriacao,
+			tempoCriacaoHr ?? existente.TempoCriacaoHr,
+			artesao ?? existente.Artesao
+		);
+	}
+
+	// Inativação lógica do artesanato
+	public static Artesanato Inativar(Artesanato existente)
+	{
+		// Exemplo: zera quantidade, marca como não aceita encomenda e pode adicionar uma propriedade IsAtivo se desejar
+		return Atualizar(
+			existente,
+			quantidadeArtesanato: 0,
+			aceitaEncomenda: false,
+			sobEncomenda: false
+		);
+	}
+
+	private static Artesanato Atualizar(Artesanato existente, int quantidadeArtesanato, bool aceitaEncomenda, bool sobEncomenda)
+	{
+		throw new NotImplementedException();
+	}
 
 	#endregion
 

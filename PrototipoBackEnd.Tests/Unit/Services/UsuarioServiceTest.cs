@@ -9,7 +9,7 @@ using AutoMapper;
 using Xunit;
 using Moq;
 
-namespace PrototipoBackEnd.UnitTests.Services;
+namespace PrototipoBackEnd.UnitTests.Unit.Services;
 
 public class UsuarioServiceTest
 {
@@ -33,7 +33,7 @@ public class UsuarioServiceTest
 		var dtos = new List<UsuarioDto> { NewUsuarioDto(usuarios[0].Id, usuarios[0].Nome, usuarios[0].Email, usuarios[0].SenhaHash) };
 
 		_repo.Reset();
-		_repo.Setup(r => r.BuscarTodos()).ReturnsAsync((IEnumerable<Usuario>)usuarios);
+		_repo.Setup(r => r.BuscarTodos()).ReturnsAsync(usuarios);
 		_mapper.Setup(m => m.Map<List<UsuarioDto>>(It.IsAny<IEnumerable<Usuario>>())).Returns(dtos);
 
 		var sut = CreateSut();

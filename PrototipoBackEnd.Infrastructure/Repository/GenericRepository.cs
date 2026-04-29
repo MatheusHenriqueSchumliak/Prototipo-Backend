@@ -9,12 +9,20 @@ namespace PrototipoBackEnd.Infrastructure.Repository
 	{
 		#region Construtor 		
 		private readonly IMongoCollection<T> _collection;
+		private IMongoDatabase database;
+		private string collectionName;
 
-		public GenericRepository(MongoDbContext mongoDbContext)
+		public GenericRepository(IMongoDatabase database, MongoDbContext mongoDbContext)
 		{
 			// Usando o mapeamento para buscar o nome correto da coleção e inicializar a coleção
 			var collectionName = MongoCollectionMapper.GetCollectionName<T>();
 			_collection = mongoDbContext.GetDatabase().GetCollection<T>(collectionName);
+		}
+
+		public GenericRepository(IMongoDatabase database, string collectionName)
+		{
+			this.database = database;
+			this.collectionName = collectionName;
 		}
 		#endregion
 

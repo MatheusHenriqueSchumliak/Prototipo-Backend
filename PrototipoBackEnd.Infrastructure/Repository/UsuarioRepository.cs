@@ -1,17 +1,18 @@
-﻿using PrototipoBackEnd.Infrastructure.Context;
+﻿using PrototipoBackEnd.Domain.Interfaces.Repositories;
 using PrototipoBackEnd.Domain.Interfaces;
 using PrototipoBackEnd.Domain.Entities;
 using MongoDB.Driver;
 
 namespace PrototipoBackEnd.Infrastructure.Repository
 {
-	public class UsuarioRepository : GenericRepository<Usuario>, IUsuarioRepository
+	public class UsuarioRepository : GenericRepository<Usuario>, IUsuarioRepository, IGenericRepository<Usuario>
+
 	{
 		#region Construtor
 		private readonly IMongoCollection<Usuario> _usuarioCollection;
-		public UsuarioRepository(MongoDbContext mongoDbContext) : base(mongoDbContext)
+		public UsuarioRepository(IMongoDatabase database, string collectionName) : base(database, collectionName)
 		{
-			_usuarioCollection = mongoDbContext.GetDatabase().GetCollection<Usuario>("Usuarios");
+			_usuarioCollection = database.GetCollection<Usuario>(collectionName);
 		}
 		#endregion
 

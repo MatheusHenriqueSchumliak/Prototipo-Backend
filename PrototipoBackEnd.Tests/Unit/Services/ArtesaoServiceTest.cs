@@ -9,7 +9,7 @@ using AutoMapper;
 using Xunit;
 using Moq;
 
-namespace PrototipoBackEnd.UnitTests.Services;
+namespace PrototipoBackEnd.UnitTests.Unit.Services;
 
 public class ArtesaoServiceTest
 {

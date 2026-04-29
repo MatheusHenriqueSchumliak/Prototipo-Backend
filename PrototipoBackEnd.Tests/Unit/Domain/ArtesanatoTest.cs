@@ -2,7 +2,7 @@
 using FluentAssertions;
 using Xunit;
 
-namespace PrototipoBackEnd.UnitTests.Domain;
+namespace PrototipoBackEnd.UnitTests.Unit.Domain;
 
 public class ArtesanatoTest
 {
