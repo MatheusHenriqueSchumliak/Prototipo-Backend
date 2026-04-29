@@ -1,11 +1,10 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
-using PrototipoBackEnd.Application.Dtos;
+﻿using PrototipoBackEnd.Domain.Interfaces.Repositories;
 using PrototipoBackEnd.Application.Dtos.Artesanato;
-using PrototipoBackEnd.Application.Interfaces;
-using PrototipoBackEnd.Domain.Entities;
-using PrototipoBackEnd.Domain.Interfaces.Repositories;
 using PrototipoBackEnd.Domain.Interfaces.Services;
+using PrototipoBackEnd.Application.Interfaces;
+using PrototipoBackEnd.Application.Factories;
+using PrototipoBackEnd.Domain.Entities;
+using Microsoft.AspNetCore.Http;
 
 namespace PrototipoBackEnd.Application.Services
 {
@@ -14,19 +13,19 @@ namespace PrototipoBackEnd.Application.Services
 		#region Construtor
 		private readonly IArtesanatoRepository _artesanatoRepository;
 		private readonly IAmazonS3Service _amazonS3Service;
-		private readonly IMapper _mapper;
-		public ArtesanatoService(IArtesanatoRepository artesanatoRepository, IAmazonS3Service amazonS3Service, IMapper mapper)
+
+		public ArtesanatoService(IArtesanatoRepository artesanatoRepository, IAmazonS3Service amazonS3Service)
 		{
 			_artesanatoRepository = artesanatoRepository;
 			_amazonS3Service = amazonS3Service;
-			_mapper = mapper;
+
 		}
 		#endregion
 
 		public async Task<List<ArtesanatoDto>> BuscarTodos()
 		{
 			var artesanatos = await _artesanatoRepository.BuscarTodos();
-			return _mapper.Map<List<ArtesanatoDto>>(artesanatos);
+			return artesanatos.Select(ArtesanatoFactory.CriarDto).ToList();
 		}
 		public async Task<ArtesanatoDto> BuscarPorId(string id)
 		{
@@ -36,9 +35,7 @@ namespace PrototipoBackEnd.Application.Services
 				if (artesanato == null)
 					throw new Exception($"Artesato não foi encontrado!");
 
-				var dto = _mapper.Map<ArtesanatoDto>(artesanato);
-
-				return dto;
+				return ArtesanatoFactory.CriarDto(artesanato);
 			}
 			catch (Exception)
 			{
@@ -53,9 +50,7 @@ namespace PrototipoBackEnd.Application.Services
 				if (artesanato == null)
 					throw new Exception($"Artesato não foi encontrado!");
 
-				var dto = _mapper.Map<ArtesanatoDto>(artesanato);
-
-				return dto;
+				return ArtesanatoFactory.CriarDto(artesanato);
 			}
 			catch (Exception)
 			{
@@ -70,8 +65,7 @@ namespace PrototipoBackEnd.Application.Services
 				if (artesanatos == null || artesanatos.Count == 0)
 					return new List<ArtesanatoDto>(); // Retorna lista vazia em vez de exception
 
-				var dtos = _mapper.Map<List<ArtesanatoDto>>(artesanatos);
-				return dtos;
+				return artesanatos.Select(ArtesanatoFactory.CriarDto).ToList();
 			}
 			catch (Exception)
 			{
@@ -94,11 +88,11 @@ namespace PrototipoBackEnd.Application.Services
 				dto.Midia = new MidiaDto { Imagens = imagemUrls }; // Adiciona todas as URLs como lista  
 			}
 
-			var entidade = _mapper.Map<Artesanato>(dto); // Mapeia o DTO para a entidade de domínio  
+			var entidade = ArtesanatoFactory.CriarEntidade(dto); // Mapeia o DTO para a entidade de domínio  
 
 			await _artesanatoRepository.Adicionar(entidade); // Salva no banco de dados (ou MongoDB)  
 
-			return _mapper.Map<ArtesanatoDto>(entidade); // Retorna o DTO já com ID gerado, etc.  
+			return ArtesanatoFactory.CriarDto(entidade); // Retorna o DTO já com ID gerado, etc.  
 		}
 		public async Task Atualizar(ArtesanatoDto dto, string id)
 		{

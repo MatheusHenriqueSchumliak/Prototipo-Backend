@@ -1,10 +1,10 @@
 ﻿using PrototipoBackEnd.Application.Common.Extensions;
+using PrototipoBackEnd.Application.Dtos.Usuario;
 using PrototipoBackEnd.Application.Interfaces;
+using PrototipoBackEnd.Application.Factories;
 using PrototipoBackEnd.Domain.Enumerables;
 using PrototipoBackEnd.Domain.Interfaces;
 using PrototipoBackEnd.Domain.Entities;
-using AutoMapper;
-using PrototipoBackEnd.Application.Dtos.Usuario;
 
 namespace PrototipoBackEnd.Application.Services
 {
@@ -13,20 +13,18 @@ namespace PrototipoBackEnd.Application.Services
 		#region Construtor
 		private readonly IUsuarioRepository _usuarioRepository;
 		private readonly ISenhaService _senhaService;
-		private readonly IMapper _mapper;
 
-		public UsuarioService(IUsuarioRepository usuarioRepository, ISenhaService senhaService, IMapper mapper)
+		public UsuarioService(IUsuarioRepository usuarioRepository, ISenhaService senhaService)
 		{
 			_usuarioRepository = usuarioRepository;
 			_senhaService = senhaService;
-			_mapper = mapper;
 		}
 		#endregion
 
 		public async Task<List<UsuarioDto>> BuscarTodos()
 		{
 			var usuarios = await _usuarioRepository.BuscarTodos();
-			return _mapper.Map<List<UsuarioDto>>(usuarios);
+			return usuarios.Select(UsuarioFactory.CriarDto).ToList();
 		}
 
 		public async Task<UsuarioDto> BuscarPorId(string id)
@@ -39,7 +37,7 @@ namespace PrototipoBackEnd.Application.Services
 				// Se o usuário for encontrado, retorna o DTO
 				if (usuario != null)
 				{
-					return _mapper.Map<UsuarioDto>(usuario);
+					return UsuarioFactory.CriarDto(usuario);
 				}
 
 				throw new Exception($"Usuário não foi encontrado!"); // Retorna null caso o usuário não seja encontrado
@@ -80,7 +78,7 @@ namespace PrototipoBackEnd.Application.Services
 			AtualizarSenha(usuarioExistente, dto);
 
 			// Usa o AutoMapper para atualizar as propriedades do usuário  
-			var novoUsuario = _mapper.Map<Usuario>(dto);
+			var novoUsuario = UsuarioFactory.CriarEntidade(dto);
 			usuarioExistente.ApplyIfChanged(novoUsuario);
 
 			// Persiste as alterações  

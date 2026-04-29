@@ -9,7 +9,6 @@ using PrototipoBackEnd.Infrastructure.Context;
 using PrototipoBackEnd.Application.Interfaces;
 using MongoDB.Bson.Serialization.Serializers;
 using PrototipoBackEnd.Application.Services;
-using PrototipoBackEnd.Application.Mapping;
 using PrototipoBackEnd.Domain.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
@@ -28,14 +27,6 @@ namespace PrototipoBackEnd.Infrastructure.IoC
 		{
 			// Registra a serialização do Guid
 			BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
-
-			#region AutoMapper Configuração
-
-			services.AddAutoMapper(typeof(UsuarioProfile).Assembly);
-			services.AddAutoMapper(typeof(ArtesaoProfile).Assembly);
-			services.AddAutoMapper(typeof(ArtesanatoProfile).Assembly);
-
-			#endregion
 
 			#region AWS Settings
 			services.Configure<AWSSettings>(configuration.GetSection("AWS"));

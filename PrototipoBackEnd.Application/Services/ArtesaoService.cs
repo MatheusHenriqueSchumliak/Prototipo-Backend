@@ -1,14 +1,13 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using PrototipoBackEnd.Application.Dtos.Artesao;
+using PrototipoBackEnd.Application.Factories;
 using PrototipoBackEnd.Application.Interfaces;
 using PrototipoBackEnd.Domain.Entities;
 using PrototipoBackEnd.Domain.Interfaces.Repositories;
 using PrototipoBackEnd.Domain.Interfaces.Services;
 using PrototipoBackEnd.Domain.ValueObjects;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace PrototipoBackEnd.Application.Services
 {
@@ -17,12 +16,11 @@ namespace PrototipoBackEnd.Application.Services
 		#region Construtor
 		private readonly IArtesaoRepository _artesaoRepository;
 		private readonly IAmazonS3Service _amazonS3Service;
-		private readonly IMapper _mapper;
-		public ArtesaoService(IArtesaoRepository artesaoRepository, IAmazonS3Service amazonS3Service, IMapper mapper)
+		public ArtesaoService(IArtesaoRepository artesaoRepository, IAmazonS3Service amazonS3Service)
 		{
 			_artesaoRepository = artesaoRepository;
 			_amazonS3Service = amazonS3Service;
-			_mapper = mapper;
+
 		}
 		#endregion
 
@@ -30,7 +28,7 @@ namespace PrototipoBackEnd.Application.Services
 		public async Task<List<ArtesaoDto>> BuscarTodos()
 		{
 			var artesaos = await _artesaoRepository.BuscarTodos();
-			return _mapper.Map<List<ArtesaoDto>>(artesaos);
+			return artesaos.Select(ArtesaoFactory.CriarDto).ToList();
 		}
 		public async Task<ArtesaoDto> BuscarPorId(string id)
 		{
@@ -40,23 +38,7 @@ namespace PrototipoBackEnd.Application.Services
 				if (artesao == null)
 					throw new Exception($"Artesão não foi encontrado!");
 
-				var dto = _mapper.Map<ArtesaoDto>(artesao);
-
-				//// Recupera a imagem se tiver FotoUrl
-				//if (!string.IsNullOrEmpty(dto.FotoUrl))
-				//{
-				//	var fileName = Path.GetFileName(dto.FotoUrl); // Extrai o nome do arquivo da URL
-				//	var imageStream = await _amazonS3Service.GetFile(fileName);
-
-				//	if (imageStream != null)
-				//	{
-				//		using var ms = new MemoryStream();
-				//		await imageStream.CopyToAsync(ms);
-				//		dto.FotoUrl = ms.ToArray(); // Supondo que você tenha essa propriedade
-				//	}
-				//}
-
-				return dto;
+				return ArtesaoFactory.CriarDto(artesao);
 			}
 			catch (Exception)
 			{
@@ -75,41 +57,11 @@ namespace PrototipoBackEnd.Application.Services
 
 			try
 			{
-				var endereco = new Endereco(
-					dto.Endereco!.CEP,
-					dto.Endereco!.Estado,
-					dto.Endereco!.Cidade,
-					dto.Endereco!.Rua,
-					dto.Endereco!.Bairro,
-					dto.Endereco!.Numero ?? string.Empty,
-					dto.Endereco!.Numero,
-					dto.Endereco!.SemNumero
-				);
-
-				var redesSociais = new RedesSociais(
-					dto.RedesSociais.Instagram,
-					dto.RedesSociais.Facebook
-				);
-
-				var especialidade = new Especialidade(dto.Especialidade.Itens);
-
-				var artesao = Artesao.Criar(					
-					pessoaId: dto.PessoaId,
-					nome: dto.Nome,
-					descricao: dto.Descricao,
-					foto: dto.Foto ?? string.Empty,
-					especialidade: especialidade,
-					enderecoComercial: endereco,
-					redesSociais: redesSociais,
-					recebeEncomenda: dto.RecebeEncomenda,
-					enviaEncomenda: dto.EnviaEncomenda,
-					localFisico: dto.LocalFisico,
-					feiraMunicipal: dto.FeiraMunicipal
-				);
+				var artesao = ArtesaoFactory.CriarEntidade(dto);
 
 				await _artesaoRepository.Adicionar(artesao);
 
-				return _mapper.Map<ArtesaoDto>(artesao);
+				return ArtesaoFactory.CriarDto(artesao);
 			}
 			catch (Exception ex)
 			{
@@ -145,14 +97,24 @@ namespace PrototipoBackEnd.Application.Services
 					dto.Foto = artesaoExistente.Foto;
 				}
 
-				// ✅ Mapear os dados do DTO para a entidade existente
-				_mapper.Map(dto, artesaoExistente);
+				// Atualiza os campos do artesaoExistente com base no DTO
+				var novoArtesao = ArtesaoFactory.CriarEntidade(dto);
+				artesaoExistente.Atualizar(
+					novoArtesao.Nome,
+					novoArtesao.Descricao,
+					novoArtesao.Foto,
+					novoArtesao.EnderecoComercial,
+					novoArtesao.RedesSociais,
+					novoArtesao.RecebeEncomenda,
+					novoArtesao.EnviaEncomenda,
+					novoArtesao.LocalFisico,
+					novoArtesao.FeiraMunicipal
+				);
+				artesaoExistente.AtualizarEspecialidades(novoArtesao.Especialidade);
 
-				// ✅ Salvar as alterações no banco
 				await _artesaoRepository.Atualizar(artesaoExistente, id);
 
-				// ✅ Retornar o DTO atualizado
-				return _mapper.Map<ArtesaoDto>(artesaoExistente);
+				return ArtesaoFactory.CriarDto(artesaoExistente);
 			}
 			catch (Exception ex)
 			{
@@ -195,7 +157,7 @@ namespace PrototipoBackEnd.Application.Services
 				: Builders<Artesao>.Filter.Empty;
 
 			var artesaos = await _artesaoRepository.BuscarComFiltro(filtroFinal);
-			return _mapper.Map<List<ArtesaoDto>>(artesaos);
+			return artesaos.Select(ArtesaoFactory.CriarDto).ToList();
 		}
 
 
