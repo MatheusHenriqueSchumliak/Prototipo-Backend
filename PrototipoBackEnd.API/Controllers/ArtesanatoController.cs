@@ -1,8 +1,8 @@
-﻿using PrototipoBackEnd.Domain.Interfaces.Services;
+﻿using PrototipoBackEnd.Application.Dtos.Artesanato;
+using PrototipoBackEnd.Domain.Interfaces.Services;
 using PrototipoBackEnd.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PrototipoBackEnd.Application.Dtos.Artesanato;
 
 namespace PrototipoBackEnd.API.Controllers
 {
