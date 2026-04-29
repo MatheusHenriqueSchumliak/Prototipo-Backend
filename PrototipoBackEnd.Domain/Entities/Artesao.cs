@@ -1,102 +1,125 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
-using MongoDB.Bson;
+﻿using PrototipoBackEnd.Domain.Entities.Base;
+using PrototipoBackEnd.Domain.ValueObjects;
 
 namespace PrototipoBackEnd.Domain.Entities
 {
-	public class Artesao
+	public class Artesao : EntityBase
 	{
-		[BsonId]
-		[BsonRepresentation(BsonType.String)]
-		public string Id { get; set; }
+		public string PessoaId { get; private set; }
+		public string Nome { get; private set; }
+		public string Descricao { get; private set; }
+		public string Foto { get; private set; }
+		public bool RecebeEncomenda { get; private set; }
+		public bool EnviaEncomenda { get; private set; }
+		public bool LocalFisico { get; private set; }
+		public bool FeiraMunicipal { get; private set; }
+		public Especialidade Especialidade { get; private set; }
+		public Endereco? Endereco { get; private set; }
+		public RedesSociais RedesSociais { get; private set; }
 
-		[BsonRepresentation(BsonType.String)]
-		public required string UsuarioId { get; set; }
-
-		public string NomeCompleto { get; set; } = null!;
-		public int Idade { get; set; }
-		public string NomeArtesao { get; set; } = null!;
-		public string Telefone { get; set; } = null!;
-		public string WhatsApp { get; set; } = null!;
-		public string Email { get; set; } = null!;
-		public string Instagram { get; set; } = null!;
-		public string Facebook { get; set; } = null!;
-		public string DescricaoPerfil { get; set; } = null!;
-		public bool ReceberEncomendas { get; set; } = false;
-		public bool EnviaEncomendas { get; set; } = false;
-		public string? FotoUrl { get; set; } = null!;
-		public string? NichoAtuacao { get; set; } = null!;
-		public bool LocalFisico { get; set; } = false;
-		public bool FeiraMunicipal { get; set; } = false;
-		// Endereço
-		public string CEP { get; set; } = null!;
-		public string Estado { get; set; } = null!;
-		public string Cidade { get; set; } = null!;
-		public string Rua { get; set; } = null!;
-		public string Bairro { get; set; } = null!;
-		public string Complemento { get; set; } = null!;
-		public string Numero { get; set; } = null!;
-		public bool SemNumero { get; set; } = false;
-
-		// Relacionamento com artesanatos
-		public List<string> ArtesanatoIds { get; set; } = new(); // Referência a IDs de artesanatos
-		[BsonIgnore]
-		public List<Artesanato>? Artesanatos { get; set; }
 		public Artesao() { }
 
-		public static Artesao Criar(
-			string usuarioId,
-			string nomeArtesao,
-			int idade,
-			string nomeCompleto,
-			string telefone,
-			string whatsapp,
-			string email,
-			string instagram,
-			string facebook,
-			string descricaoPerfil,
-			bool receberEncomendas,
-			bool enviaEncomendas,
-			string fotoUrl,
-			string nichoAtuacao,
-			bool localFisico,
-			bool feiraMunicipal,
-			string cep,
-			string estado,
-			string cidade,
-			string rua,
-			string bairro,
-			string complemento,
-			string numero,
-			bool semNumero)
+		public static Artesao Criar(string pessoaId, string nome, string descricao, string nichoAtuacao, string foto, Especialidade especialidade, Endereco? endereco, RedesSociais redesSociais, bool recebeEncomenda, bool enviaEncomenda, bool localFisico, bool feiraMunicipal)
 		{
+			if (string.IsNullOrWhiteSpace(pessoaId))
+				throw new ArgumentException("PessoaId vazio.");
+
+			if (string.IsNullOrWhiteSpace(nome))
+				throw new ArgumentException("NomeArtesao vazio.");
+
+			// REGRA local físico e endereço são dependentes um do outro
+			if (localFisico && endereco == null)
+				throw new ArgumentException("Endereço é obrigatório quando há local físico.");
+
+			if (!localFisico && endereco != null)
+				throw new ArgumentException("Endereço não deve ser informado sem local físico.");
+
 			return new Artesao
 			{
 				Id = Guid.NewGuid().ToString(),
-				UsuarioId = usuarioId,
-				NomeCompleto = nomeCompleto,
-				Idade = idade,
-				NomeArtesao = nomeArtesao,
-				Telefone = telefone,
-				WhatsApp = whatsapp,
-				Email = email,
-				Instagram = instagram,
-				Facebook = facebook,
-				DescricaoPerfil = descricaoPerfil,
-				ReceberEncomendas = receberEncomendas,
-				EnviaEncomendas = enviaEncomendas,
-				FotoUrl = fotoUrl,
-				NichoAtuacao = nichoAtuacao,
+				PessoaId = pessoaId,
+				Nome = nome.Trim(),
+				Descricao = descricao.Trim(),
+				Foto = foto.Trim(),
+				Especialidade = especialidade,
+				Endereco = endereco,
+				RedesSociais = redesSociais,
+				RecebeEncomenda = recebeEncomenda,
+				EnviaEncomenda = enviaEncomenda,
 				LocalFisico = localFisico,
-				FeiraMunicipal = feiraMunicipal,
-				CEP = cep,
-				Estado = estado,
-				Cidade = cidade,
-				Rua = rua,
-				Bairro = bairro,
-				Complemento = complemento,
-				Numero = numero,
-				SemNumero = semNumero
+				FeiraMunicipal = feiraMunicipal
+
 			};
 		}
+
+		public void Atualizar(string? nome, string? descricao, string? foto, Endereco? endereco, RedesSociais? redesSociais, bool? recebeEncomenda, bool? enviaEncomenda, bool? localFisico, bool? feiraMunicipal)
+		{
+			if (!string.IsNullOrWhiteSpace(nome))
+				Nome = nome.Trim();
+
+			if (!string.IsNullOrWhiteSpace(descricao))
+				Descricao = descricao.Trim();
+
+			if (!string.IsNullOrWhiteSpace(foto))
+				Foto = foto.Trim();
+
+			if (redesSociais != null)
+				RedesSociais = redesSociais;
+
+			if (recebeEncomenda.HasValue)
+				RecebeEncomenda = recebeEncomenda.Value;
+
+			if (enviaEncomenda.HasValue)
+				EnviaEncomenda = enviaEncomenda.Value;
+
+			if (feiraMunicipal.HasValue)
+				FeiraMunicipal = feiraMunicipal.Value;
+
+			if (localFisico.HasValue)
+				LocalFisico = localFisico.Value;
+
+			//REGRA DO ENDEREÇO
+			if (LocalFisico)
+			{
+				if (endereco == null)
+					throw new ArgumentException("Endereço obrigatório quando há local físico.");
+
+				Endereco = endereco;
+			}
+			else
+			{
+				Endereco = null;
+			}
+
+			MarcarAtualizado();
+		}
+
+		public void AtualizarEspecialidades(Especialidade especialidade)
+		{
+			Especialidade = especialidade;
+			MarcarAtualizado();
+		}
+
+		public void Inativar()
+		{
+			if (DataRemocao.HasValue)
+				return;
+
+			RecebeEncomenda = false;
+			EnviaEncomenda = false;
+			LocalFisico = false;
+			FeiraMunicipal = false;
+
+			Endereco = null;
+
+			Remover();
+		}
+
+		public void Reativar()
+		{
+			DataRemocao = null;
+			MarcarAtualizado();
+		}
+
 	}
 }

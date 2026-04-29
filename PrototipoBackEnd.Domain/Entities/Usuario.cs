@@ -1,41 +1,86 @@
-﻿using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
+﻿using PrototipoBackEnd.Domain.Entities.Base;
 using PrototipoBackEnd.Domain.Enumerables;
 
 namespace PrototipoBackEnd.Domain.Entities
 {
-	public class Usuario
+	public class Usuario : EntityBase
 	{
-		[BsonId]
-		[BsonRepresentation(BsonType.String)] // Converte Guid para string
-		public string Id { get; set; }
-		public string Nome { get; set; } = null!;
-		public string Email { get; set; } = null!;
-		public string SenhaHash { get; set; } = null!;
+		public string PessoaId { get; private set; }
+		public string Email { get; private set; }
+		public string SenhaHash { get; private set; }
+		public UsuarioEnum Role { get; private set; }
 
-		[BsonRepresentation(BsonType.String)] // Salva como string no Mongo
-		public UsuarioEnum Role { get; set; } = UsuarioEnum.Administrador;
-		public bool IsAtivo { get; set; } = true;
+		public Usuario() { }
 
-
-		public Usuario() { } // para o Mongo ou ORM
-
-		public static Usuario Criar(string nome, string email, string senhaHash, Enum role, bool isAtivo )
+		public static Usuario Criar(string pessoaId, string email, string senhaHash, UsuarioEnum role)
 		{
-			if (string.IsNullOrWhiteSpace(nome)) throw new ArgumentException("Nome vazio.");
-			if (string.IsNullOrWhiteSpace(email)) throw new ArgumentException("Email vazio.");
-			if (string.IsNullOrWhiteSpace(senhaHash)) throw new ArgumentException("Senha vazio.");			
+			if (string.IsNullOrWhiteSpace(pessoaId))
+				throw new ArgumentException("PessoaId vazio.");
+
+			if (string.IsNullOrWhiteSpace(email))
+				throw new ArgumentException("Email vazio.");
+
+			if (string.IsNullOrWhiteSpace(senhaHash))
+				throw new ArgumentException("Senha inválida.");
+
+			email = email.Trim().ToLower();
+
+			//validação simples de email
+			if (!email.Contains("@"))
+				throw new ArgumentException("Email inválido.");
 
 			return new Usuario
 			{
 				Id = Guid.NewGuid().ToString(),
-				Nome = nome.Trim(),
-				Email = email.Trim().ToLower(),
+				PessoaId = pessoaId,
+				Email = email,
 				SenhaHash = senhaHash,
-				Role = (UsuarioEnum)role,
-				IsAtivo = true
-
+				Role = role,
+				DataCriacao = DateTime.UtcNow
 			};
+		}
+
+		public void AlterarEmail(string email)
+		{
+			if (string.IsNullOrWhiteSpace(email))
+				throw new ArgumentException("Email vazio.");
+
+			email = email.Trim().ToLower();
+
+			if (!email.Contains("@"))
+				throw new ArgumentException("Email inválido.");
+
+			Email = email;
+			MarcarAtualizado();
+		}
+
+		public void AlterarSenha(string novoHash)
+		{
+			if (string.IsNullOrWhiteSpace(novoHash))
+				throw new ArgumentException("Senha inválida.");
+
+			SenhaHash = novoHash;
+			MarcarAtualizado();
+		}
+
+		public void AlterarRole(UsuarioEnum role)
+		{
+			Role = role;
+			MarcarAtualizado();
+		}
+
+		public void Inativar()
+		{
+			if (DataRemocao.HasValue)
+				return;
+
+			Remover();
+		}
+
+		public void Reativar()
+		{
+			DataRemocao = null;
+			MarcarAtualizado();
 		}
 
 	}
