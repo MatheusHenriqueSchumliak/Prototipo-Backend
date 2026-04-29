@@ -12,6 +12,7 @@ namespace PrototipoBackEnd.Application.Factories
 				Id = usuario.Id,
 				PessoaId = usuario.PessoaId,
 				Email = usuario.Email,
+				SenhaHash = usuario.SenhaHash,
 				Role = usuario.Role,
 				IsAtivo = usuario.IsAtivo
 			};
