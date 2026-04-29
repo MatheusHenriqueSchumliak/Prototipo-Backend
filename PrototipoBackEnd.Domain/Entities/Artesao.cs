@@ -14,12 +14,12 @@ namespace PrototipoBackEnd.Domain.Entities
 		public bool LocalFisico { get; private set; }
 		public bool FeiraMunicipal { get; private set; }
 		public Especialidade Especialidade { get; private set; } = null!;
-		public Endereco? Endereco { get; private set; }
+		public Endereco? EnderecoComercial { get; private set; }
 		public RedesSociais RedesSociais { get; private set; } = null!;
 
 		public Artesao() { }
 
-		public static Artesao Criar(string pessoaId, string nome, string descricao, string foto, Especialidade especialidade, Endereco? endereco, RedesSociais redesSociais, bool recebeEncomenda, bool enviaEncomenda, bool localFisico, bool feiraMunicipal)
+		public static Artesao Criar(string pessoaId, string nome, string descricao, string foto, Especialidade especialidade, Endereco? enderecoComercial, RedesSociais redesSociais, bool recebeEncomenda, bool enviaEncomenda, bool localFisico, bool feiraMunicipal)
 		{
 			if (string.IsNullOrWhiteSpace(pessoaId))
 				throw new ArgumentException("PessoaId vazio.");
@@ -28,11 +28,11 @@ namespace PrototipoBackEnd.Domain.Entities
 				throw new ArgumentException("NomeArtesao vazio.");
 
 			// REGRA local físico e endereço são dependentes um do outro
-			if (localFisico && endereco == null)
-				throw new ArgumentException("Endereço é obrigatório quando há local físico.");
+			if (localFisico && enderecoComercial == null)
+				throw new ArgumentException("Endereço comercial obrigatório.");
 
-			if (!localFisico && endereco != null)
-				throw new ArgumentException("Endereço não deve ser informado sem local físico.");
+			if (!localFisico && enderecoComercial != null)
+				throw new ArgumentException("Não deve informar endereço comercial.");
 
 			return new Artesao
 			{
@@ -42,7 +42,7 @@ namespace PrototipoBackEnd.Domain.Entities
 				Descricao = descricao.Trim(),
 				Foto = foto.Trim(),
 				Especialidade = especialidade,
-				Endereco = endereco,
+				EnderecoComercial = enderecoComercial,
 				RedesSociais = redesSociais,
 				RecebeEncomenda = recebeEncomenda,
 				EnviaEncomenda = enviaEncomenda,
@@ -52,7 +52,7 @@ namespace PrototipoBackEnd.Domain.Entities
 			};
 		}
 
-		public void Atualizar(string? nome, string? descricao, string? foto, Endereco? endereco, RedesSociais? redesSociais, bool? recebeEncomenda, bool? enviaEncomenda, bool? localFisico, bool? feiraMunicipal)
+		public void Atualizar(string? nome, string? descricao, string? foto, Endereco? enderecoComercial, RedesSociais? redesSociais, bool? recebeEncomenda, bool? enviaEncomenda, bool? localFisico, bool? feiraMunicipal)
 		{
 			if (!string.IsNullOrWhiteSpace(nome))
 				Nome = nome.Trim();
@@ -81,14 +81,14 @@ namespace PrototipoBackEnd.Domain.Entities
 			//REGRA DO ENDEREÇO
 			if (LocalFisico)
 			{
-				if (endereco == null)
+				if (enderecoComercial == null)
 					throw new ArgumentException("Endereço obrigatório quando há local físico.");
 
-				Endereco = endereco;
+				EnderecoComercial = enderecoComercial;
 			}
 			else
 			{
-				Endereco = null;
+				EnderecoComercial = null;
 			}
 
 			MarcarAtualizado();
@@ -110,7 +110,7 @@ namespace PrototipoBackEnd.Domain.Entities
 			LocalFisico = false;
 			FeiraMunicipal = false;
 
-			Endereco = null;
+			EnderecoComercial = null;
 
 			Remover();
 		}

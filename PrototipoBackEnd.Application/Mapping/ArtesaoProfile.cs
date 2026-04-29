@@ -1,6 +1,6 @@
-﻿using PrototipoBackEnd.Application.Dtos;
-using PrototipoBackEnd.Domain.Entities;
+﻿using PrototipoBackEnd.Domain.Entities;
 using AutoMapper;
+using PrototipoBackEnd.Application.Dtos.Artesao;
 
 namespace PrototipoBackEnd.Application.Mapping
 {

@@ -7,15 +7,19 @@ namespace PrototipoBackEnd.Domain.Entities
 	{
 		public string NomeCompleto { get; private set; } = string.Empty;
 		public DateTime DataNascimento { get; private set; }
+		public Endereco Endereco { get; private set; } = null!;
 		public Contato Contato { get; private set; } = null!;
 		public bool TemUsuario { get; private set; }
 		public bool EhArtesao { get; private set; }
 		public Pessoa() { }
 
-		public static Pessoa Criar(string nomeCompleto, DateTime dataNascimento, Contato contato)
+		public static Pessoa Criar(string nomeCompleto, DateTime dataNascimento, Endereco endereco, Contato contato)
 		{
 			if (string.IsNullOrWhiteSpace(nomeCompleto))
 				throw new ArgumentException("NomeCompleto vazio.");
+
+			if (endereco == null)
+				throw new ArgumentException("Endereço obrigatório.");
 
 			if (contato == null)
 				throw new ArgumentException("Contato obrigatório.");
@@ -34,13 +38,14 @@ namespace PrototipoBackEnd.Domain.Entities
 				NomeCompleto = nomeCompleto.Trim(),
 				DataNascimento = dataNascimento,
 				Contato = contato,
+				Endereco = endereco,
 				TemUsuario = false,
 				EhArtesao = false,
 				DataCriacao = DateTime.UtcNow
 			};
 		}
 
-		public void Atualizar(string? nomeCompleto, DateTime? dataNascimento, Contato? contato)
+		public void Atualizar(string? nomeCompleto, DateTime? dataNascimento, Endereco? endereco, Contato? contato)
 		{
 			if (!string.IsNullOrWhiteSpace(nomeCompleto))
 				NomeCompleto = nomeCompleto.Trim();
@@ -56,6 +61,9 @@ namespace PrototipoBackEnd.Domain.Entities
 
 				DataNascimento = dataNascimento.Value;
 			}
+
+			if (endereco != null)
+				Endereco = endereco;
 
 			if (contato != null)
 				Contato = contato;
