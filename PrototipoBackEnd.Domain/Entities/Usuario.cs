@@ -32,7 +32,7 @@ namespace PrototipoBackEnd.Domain.Entities
 			return new Usuario
 			{
 				Id = Guid.NewGuid().ToString(),
-				PessoaId = pessoaId,
+				PessoaId = Guid.TryParse(pessoaId, out var guidValido) ? pessoaId : Guid.NewGuid().ToString(),
 				Email = email,
 				SenhaHash = senhaHash,
 				Role = role,
