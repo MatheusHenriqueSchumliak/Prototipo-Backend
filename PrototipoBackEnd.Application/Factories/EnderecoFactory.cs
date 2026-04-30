@@ -23,12 +23,12 @@ namespace PrototipoBackEnd.Application.Factories
 		public static Endereco CriarEntidade(EnderecoDto dto)
 		{
 			return new Endereco(
-				dto.Rua,
-				dto.Numero,
-				dto.Bairro,
-				dto.Cidade,
-				dto.Estado,
 				dto.CEP,
+				dto.Estado,
+				dto.Cidade,
+				dto.Rua,
+				dto.Bairro,
+				dto.Numero,
 				dto.Complemento,
 				dto.SemNumero
 			);
