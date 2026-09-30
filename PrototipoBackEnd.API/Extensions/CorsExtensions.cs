@@ -9,21 +9,19 @@
 			{
 				options.AddPolicy("Frontend", policy =>
 				{
-					policy
-						.SetIsOriginAllowed(origin =>
-						{
-							// Localhost para desenvolvimento
-							if (origin.StartsWith("http://localhost")) return true;
+					policy.SetIsOriginAllowed(origin =>
+					{
+						// Localhost para desenvolvimento (http ou https)
+						if (origin.StartsWith("http://localhost") || origin.StartsWith("https://localhost")) return true;
 
-							// Qualquer subdomínio do Vercel do seu projeto
-							if (origin.Contains("prototipo-frontend") && origin.EndsWith(".vercel.app"))
-								return true;
+						// Qualquer subdomínio do Vercel do seu projeto
+						if (origin.Contains("prototipo-frontend") && origin.EndsWith(".vercel.app"))
+							return true;
 
-							return false;
-						})
-						.AllowAnyHeader()
-						.AllowAnyMethod()
-						.AllowCredentials();
+						return false;
+					}).AllowAnyHeader()
+					  .AllowAnyMethod()
+					  .AllowCredentials();
 				});
 			});
 
