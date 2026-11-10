@@ -1,14 +1,16 @@
-﻿namespace PrototipoBackEnd.Domain.ValueObjects
+namespace PrototipoBackEnd.Domain.ValueObjects
 {
 	public class Midia
 	{
-		public IReadOnlyList<string> Imagens { get; }
-		public Midia(IEnumerable<string> imagens)
+		public IReadOnlyList<string> Imagens { get; private set; } = new List<string>();
+		private Midia() { }
+
+		public Midia(IEnumerable<string> urlsImagens)
 		{
-			if (imagens == null)
+			if (urlsImagens == null)
 				throw new ArgumentException("Imagens não pode ser nulo.");
 
-			var lista = imagens
+			var lista = urlsImagens
 				.Where(x => !string.IsNullOrWhiteSpace(x))
 				.Select(x => x.Trim())
 				.ToList();
@@ -17,7 +19,7 @@
 				throw new ArgumentException("Pelo menos uma imagem é obrigatória.");
 
 			if (lista.Count > 5)
-				throw new ArgumentException("Máximo de 10 imagens permitido.");
+				throw new ArgumentException("Máximo de 5 urlsImagens permitido.");
 
 			Imagens = lista;
 		}

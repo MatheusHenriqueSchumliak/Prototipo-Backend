@@ -4,7 +4,7 @@
 	{
 		public static string GerarCaminhoArquivo(string folder, string originalFileName)
 		{
-			var extension = Path.GetExtension(originalFileName);
+			var extension = Path.GetExtension(originalFileName).ToLowerInvariant();
 			var uniqueName = $"{Guid.NewGuid()}{extension}";
 			var datePrefix = DateTime.UtcNow.ToString("yyyy/MM/dd");
 

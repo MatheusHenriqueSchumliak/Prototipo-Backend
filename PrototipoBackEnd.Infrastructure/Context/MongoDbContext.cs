@@ -9,10 +9,15 @@ namespace PrototipoBackEnd.Infrastructure.Context
 	{
 		private readonly IMongoDatabase _database;
 
+		public IMongoClient Client { get; }
+
+		// Sessão da transação em andamento (null fora de uma unidade de trabalho)
+		public IClientSessionHandle? SessaoAtual { get; set; }
+
 		public MongoDbContext(IOptions<MongoDbSettings> settings)
 		{
-			var client = new MongoClient(settings.Value.ConnectionString);
-			_database = client.GetDatabase(settings.Value.DatabaseName);
+			Client = new MongoClient(settings.Value.ConnectionString);
+			_database = Client.GetDatabase(settings.Value.DatabaseName);
 		}
 
 		public IMongoDatabase GetDatabase() => _database;

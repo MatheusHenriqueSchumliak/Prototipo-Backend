@@ -80,6 +80,15 @@ namespace PrototipoBackEnd.Domain.Entities
 			MarcarAtualizado();
 		}
 
+		public void DesvincularUsuario()
+		{
+			if (!TemUsuario)
+				return;
+
+			TemUsuario = false;
+			MarcarAtualizado();
+		}
+
 		public void TornarArtesao()
 		{
 			if (EhArtesao)

@@ -5,7 +5,6 @@ namespace PrototipoBackEnd.Domain.Entities
 {
 	public class Artesanato : EntityBase
 	{
-		public string PessoaId { get; private set; } = string.Empty;
 		public string ArtesaoId { get; private set; } = string.Empty;
 		public string Titulo { get; private set; } = string.Empty;
 		public string Descricao { get; private set; } = string.Empty;
@@ -21,11 +20,8 @@ namespace PrototipoBackEnd.Domain.Entities
 
 		public Artesanato() { }
 
-		public static Artesanato Criar(string pessoaId, string artesaoId, string titulo, string descricao, int tempoCriacao, int quantidade, decimal? preco, bool temEstoque, bool somenteEncomenda, bool aceitaEncomenda, Categoria categoria, Material material, Midia midia)
+		public static Artesanato Criar(string artesaoId, string titulo, string descricao, int tempoCriacao, int quantidade, decimal? preco, bool temEstoque, bool somenteEncomenda, bool aceitaEncomenda, Categoria categoria, Material material, Midia midia)
 		{
-			if (string.IsNullOrWhiteSpace(pessoaId))
-				throw new ArgumentException("PessoaId vazio.");
-
 			if (string.IsNullOrWhiteSpace(artesaoId))
 				throw new ArgumentException("ArtesaoId vazio.");
 
@@ -47,7 +43,6 @@ namespace PrototipoBackEnd.Domain.Entities
 			return new Artesanato
 			{
 				Id = Guid.NewGuid().ToString(),
-				PessoaId = pessoaId,
 				ArtesaoId = artesaoId,
 				Titulo = titulo.Trim(),
 				Descricao = descricao.Trim(),

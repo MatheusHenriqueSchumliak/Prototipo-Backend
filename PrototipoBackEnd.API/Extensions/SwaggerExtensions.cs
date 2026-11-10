@@ -18,11 +18,11 @@ namespace PrototipoBackEnd.API.Extensions
 				options.AddSecurityDefinition(name: "Bearer", new OpenApiSecurityScheme()
 				{
 					Name = "Authorization",
-					Type = SecuritySchemeType.ApiKey,
-					Scheme = "Bearer",
+					Type = SecuritySchemeType.Http,
+					Scheme = "bearer",
 					BearerFormat = "JWT",
 					In = ParameterLocation.Header,
-					Description = "Cabeçalho de Autorização JWT está usando o esquema Bearer \r\n\r\n Digite o 'Bearer' antes de inserir o Token"
+					Description = "Informe apenas o token JWT (o prefixo 'Bearer' é adicionado automaticamente)."
 
 				});
 

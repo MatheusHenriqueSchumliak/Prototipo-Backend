@@ -1,81 +1,50 @@
-﻿using PrototipoBackEnd.Domain.Interfaces.Services;
+using PrototipoBackEnd.Domain.Interfaces.Services;
 using PrototipoBackEnd.Application.Interfaces;
 using PrototipoBackEnd.Domain.Interfaces;
-using Microsoft.AspNetCore.Http;
-using System.Security.Cryptography;
+using PrototipoBackEnd.Domain.Interfaces.Repositories;
 using PrototipoBackEnd.Application.Dtos.Auth;
+using PrototipoBackEnd.Application.Exceptions;
 
 namespace PrototipoBackEnd.Application.Services
 {
-	public class AuthService : IAuthService
-	{
-		#region Construtor
-		private readonly IHttpContextAccessor _httpContextAccessor;
-		private readonly IUsuarioRepository _usuarioRepository;
-		private readonly ITokenService _tokenService;
-		// Simulando armazenamento em memória dos refresh tokens
-		private static readonly Dictionary<string, string> RefreshTokens = new();
-		public AuthService(IHttpContextAccessor httpContextAccessor, IUsuarioRepository usuarioRepository, ITokenService tokenService)
-		{
-			_httpContextAccessor = httpContextAccessor;
-			_usuarioRepository = usuarioRepository;
-			_tokenService = tokenService;
-		}
-		#endregion
+    public class AuthService : IAuthService
+    {
+        #region Construtor
+        private readonly IUsuarioRepository _usuarioRepository;
+        private readonly ITokenService _tokenService;
+        private readonly ISenhaService _senhaService;
+        private readonly IPessoaRepository _pessoaRepository;
 
-		private string GenerateRefreshToken()
-		{
-			var randomBytes = new byte[32];
-			using (var rng = RandomNumberGenerator.Create())
-			{
-				rng.GetBytes(randomBytes);
-				return Convert.ToBase64String(randomBytes);
-			}
-		}
+        public AuthService(IUsuarioRepository usuarioRepository, ITokenService tokenService, ISenhaService senhaService, IPessoaRepository pessoaRepository)
+        {
+            _usuarioRepository = usuarioRepository;
+            _tokenService = tokenService;
+            _senhaService = senhaService;
+            _pessoaRepository = pessoaRepository;
+        }
+        #endregion
 
-		public async Task<LoginResponseDto> Login(LoginRequestDto request)
-		{
-			var usuario = await _usuarioRepository.ObterUsuarioPorEmail(request.Email);
+        public async Task<LoginResponseDto> Login(LoginRequestDto request)
+        {
+            if (request == null || string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Senha))
+                throw new ValidationException("E-mail e senha são obrigatórios.");
 
-			if (usuario == null || !BCrypt.Net.BCrypt.Verify(request.Senha, usuario.SenhaHash))
-				throw new UnauthorizedAccessException("Credenciais inválidas.");
+            var usuario = await _usuarioRepository.ObterUsuarioPorEmail(request.Email);
 
-			var accessToken = _tokenService.GenerateToken(usuario);
-			var refreshToken = GenerateRefreshToken();
+            // Mensagem genérica: não revela se o e-mail existe ou se a senha está errada.
+            if (usuario == null || !usuario.IsAtivo || !_senhaService.VerificarHash(request.Senha, usuario.SenhaHash))
+                throw new UnauthorizedAccessException("Credenciais inválidas.");
 
-			// Salva refresh token em memória
-			RefreshTokens[usuario.Email] = refreshToken;
+            var pessoa = await _pessoaRepository.BuscarPorId(usuario.PessoaId);
 
-			// Adiciona o cookie HttpOnly com o refresh token
-			_httpContextAccessor.HttpContext.Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
-			{
-				HttpOnly = true,
-				Secure = true,
-				SameSite = SameSiteMode.Strict,
-				Expires = DateTime.UtcNow.AddDays(7)
-			});
+            return new LoginResponseDto
+            {
+                Token = _tokenService.GenerateToken(usuario),
+                Nome = pessoa?.NomeCompleto ?? string.Empty,
+                Email = usuario.Email,
+                Role = usuario.Role.ToString()
+            };
+        }
 
-			return new LoginResponseDto
-			{
-				Token = accessToken,
-				Email = usuario.Email,
-				Role = usuario.Role.ToString()
-			};
-			//var usuario = await _usuarioRepository.ObterUsuarioPorEmail(request.Email);
-
-			//if (usuario == null || !BCrypt.Net.BCrypt.Verify(request.Senha, usuario.SenhaHash))
-			//	throw new UnauthorizedAccessException("Credenciais inválidas.");
-
-			//var token = _tokenService.GenerateToken(usuario);
-
-			//return new LoginResponseDto
-			//{
-			//	Token = token,
-			//	Nome = usuario.Nome,
-			//	Email = usuario.Email,
-			//	Role = usuario.Role.ToString()
-			//};
-		}
-
-	}
+    }
 }

@@ -1,31 +1,36 @@
-﻿namespace PrototipoBackEnd.API.Extensions
+namespace PrototipoBackEnd.API.Extensions
 {
-	public static class CorsExtensions
-	{
-		public static IServiceCollection AddFrontendCors(this IServiceCollection services)
-		{
-			// Configuração de CORS
-			services.AddCors(options =>
-			{
-				options.AddPolicy("Frontend", policy =>
-				{
-					policy.SetIsOriginAllowed(origin =>
-					{
-						// Localhost para desenvolvimento (http ou https)
-						if (origin.StartsWith("http://localhost") || origin.StartsWith("https://localhost")) return true;
+    public static class CorsExtensions
+    {
+        public const string FrontendProducao = "https://prototipo-frontend-sage.vercel.app";
 
-						// Qualquer subdomínio do Vercel do seu projeto
-						if (origin.Contains("prototipo-frontend") && origin.EndsWith(".vercel.app"))
-							return true;
+        public static bool OrigemPermitida(string? origin)
+        {
+            if (string.IsNullOrWhiteSpace(origin) || !Uri.TryCreate(origin, UriKind.Absolute, out var uri))
+                return false;
 
-						return false;
-					}).AllowAnyHeader()
-					  .AllowAnyMethod()
-					  .AllowCredentials();
-				});
-			});
+            // Produção: origem exata
+            if (string.Equals(origin.TrimEnd('/'), FrontendProducao, StringComparison.OrdinalIgnoreCase))
+                return true;
 
-			return services;
-		}
-	}
+            // Desenvolvimento: http://localhost em qualquer porta
+            return uri.Scheme == Uri.UriSchemeHttp
+                && string.Equals(uri.Host, "localhost", StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static IServiceCollection AddFrontendCors(this IServiceCollection services)
+        {
+            services.AddCors(options =>
+            {
+                options.AddPolicy("Frontend", policy =>
+                {
+                    policy.SetIsOriginAllowed(OrigemPermitida)
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+            });
+
+            return services;
+        }
+    }
 }

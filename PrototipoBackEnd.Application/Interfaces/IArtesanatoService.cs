@@ -10,7 +10,7 @@ namespace PrototipoBackEnd.Application.Interfaces
 		Task<ArtesanatoDto> BuscarPorArtesaoId(string artesaoId);
 		Task<List<ArtesanatoDto>> BuscarTodosPorArtesaoId(string artesaoId);
 		Task<ArtesanatoDto> Adicionar(ArtesanatoDto dto, List<IFormFile> imagem);
-		Task Atualizar(ArtesanatoDto dto, string id);
+		Task Atualizar(ArtesanatoDto dto, string id, List<IFormFile>? imagem = null);
 		Task<bool> Apagar(string id);
 	}
 }

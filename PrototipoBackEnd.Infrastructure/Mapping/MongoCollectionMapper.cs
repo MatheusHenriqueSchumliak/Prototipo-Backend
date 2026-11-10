@@ -7,6 +7,7 @@ namespace PrototipoBackEnd.Infrastructure.Mapping
 		private static readonly Dictionary<Type, string> CollectionMap = new()
 		{
 			{ typeof(Usuario), "Usuarios" },
+			{ typeof(Pessoa), "Pessoas" },
 			{ typeof(Artesao), "Artesaos" },
 			{ typeof(Artesanato), "Artesanatos" },
 			//{ typeof(Endereco), "Enderecos" },

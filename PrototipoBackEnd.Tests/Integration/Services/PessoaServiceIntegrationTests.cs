@@ -1,4 +1,5 @@
 ﻿using PrototipoBackEnd.Domain.Interfaces.Repositories;
+using PrototipoBackEnd.Domain.Interfaces;
 using PrototipoBackEnd.Tests.Integration.Repositories;
 using PrototipoBackEnd.Application.Dtos.Pessoa;
 using PrototipoBackEnd.Application.Services;
@@ -15,7 +16,7 @@ namespace PrototipoBackEnd.Tests.Integration.Services
 		public PessoaServiceIntegrationTests()
 		{
 			_pessoaRepository = new PessoaRepositoryInMemory(); // Implemente conforme sua necessidade
-			_service = new PessoaService(_pessoaRepository);
+			_service = new PessoaService(_pessoaRepository, new Moq.Mock<IUsuarioRepository>().Object, new Moq.Mock<IArtesaoRepository>().Object, new Moq.Mock<IArtesanatoRepository>().Object, new UnitOfWorkFake());
 		}
 
 		[Fact]

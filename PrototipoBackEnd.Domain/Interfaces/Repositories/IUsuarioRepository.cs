@@ -6,5 +6,7 @@ namespace PrototipoBackEnd.Domain.Interfaces
 	public interface IUsuarioRepository : IGenericRepository<Usuario>
 	{
 		Task<Usuario> ObterUsuarioPorEmail(string email);
+		Task<Usuario?> BuscarPorPessoaId(string pessoaId);
+		Task GarantirIndicesAsync();
 	}
 }

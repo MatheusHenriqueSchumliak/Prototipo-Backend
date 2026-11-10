@@ -22,7 +22,7 @@ namespace PrototipoBackEnd.Infrastructure.Repository
 				throw new ArgumentException("ID do artesanato inválido.");
 			}
 
-			var filter = Builders<Artesanato>.Filter.Eq(x =>x.ArtesaoId, artesaoId);
+			var filter = Builders<Artesanato>.Filter.And(Builders<Artesanato>.Filter.Eq(x => x.ArtesaoId, artesaoId), Builders<Artesanato>.Filter.Eq(x => x.IsAtivo, true));
 			return await _artesaoCollection.Find(filter).FirstOrDefaultAsync();
 		}
 
@@ -33,7 +33,7 @@ namespace PrototipoBackEnd.Infrastructure.Repository
 				throw new ArgumentException("ID do artesão inválido.");
 			}
 
-			var filter = Builders<Artesanato>.Filter.Eq(x => x.ArtesaoId, artesaoId);
+			var filter = Builders<Artesanato>.Filter.And(Builders<Artesanato>.Filter.Eq(x => x.ArtesaoId, artesaoId), Builders<Artesanato>.Filter.Eq(x => x.IsAtivo, true));
 			return await _artesaoCollection.Find(filter).ToListAsync();
 		}
 	}

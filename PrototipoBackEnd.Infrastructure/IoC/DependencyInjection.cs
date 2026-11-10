@@ -1,5 +1,6 @@
 ﻿using PrototipoBackEnd.Domain.Interfaces.Repositories;
 using PrototipoBackEnd.Infrastructure.Configurations;
+using PrototipoBackEnd.Application.Configurations;
 using PrototipoBackEnd.Domain.Interfaces.Services;
 using PrototipoBackEnd.Infrastructure.Repository;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,10 +24,25 @@ namespace PrototipoBackEnd.Infrastructure.IoC
 {
 	public static class DependencyInjection
 	{
+		private static readonly object _serializerLock = new();
+		private static bool _serializerRegistrado;
+
+		private static void RegistrarSerializerDeGuid()
+		{
+			lock (_serializerLock)
+			{
+				if (_serializerRegistrado)
+					return;
+
+				BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
+				_serializerRegistrado = true;
+			}
+		}
+
 		public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
 		{
-			// Registra a serialização do Guid
-			BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
+			// Registra a serialização do Guid (global ao processo: só pode ser feita uma vez, mesmo com vários hosts, como nos testes)
+			RegistrarSerializerDeGuid();
 
 			#region AWS Settings
 			services.Configure<AWSSettings>(configuration.GetSection("AWS"));
@@ -63,6 +79,7 @@ namespace PrototipoBackEnd.Infrastructure.IoC
 			services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
 			// Aqui você pode registrar repositórios específicos  
+			services.AddScoped<IUnitOfWork, MongoUnitOfWork>();
 			services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 			services.AddScoped<IPessoaRepository, PessoaRepository>();
 			services.AddScoped<IArtesaoRepository, ArtesaoRepository>();
@@ -79,6 +96,9 @@ namespace PrototipoBackEnd.Infrastructure.IoC
 			services.AddScoped<ISenhaService, SenhaService>();
 			services.AddScoped<IAuthService, AuthService>();
 			services.AddScoped<ITokenService, TokenService>();
+
+			services.AddSingleton(configuration.GetSection("AdminSeed").Get<AdminSeedOptions>() ?? new AdminSeedOptions());
+			services.AddScoped<IAdminSeedService, AdminSeedService>();
 
 			services.AddScoped<IAmazonS3Service, AmazonS3Service>();
 			#endregion ---------------------------------  

@@ -10,9 +10,7 @@ namespace PrototipoBackEnd.Application.Factories
 			return new ArtesanatoDto
 			{
 				Id = artesanato.Id,
-				PessoaId = artesanato.PessoaId,
-				ArtesaoId = artesanato.ArtesaoId,
-				Titulo = artesanato.Titulo,
+				ArtesaoId = artesanato.ArtesaoId,				Titulo = artesanato.Titulo,
 				Descricao = artesanato.Descricao,
 				TempoCriacao = artesanato.TempoCriacao,
 				Quantidade = artesanato.Quantidade,
@@ -33,7 +31,6 @@ namespace PrototipoBackEnd.Application.Factories
 		public static Artesanato CriarEntidade(ArtesanatoDto dto)
 		{
 			return Artesanato.Criar(
-				dto.PessoaId,
 				dto.ArtesaoId,
 				dto.Titulo,
 				dto.Descricao,

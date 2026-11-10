@@ -1,182 +1,99 @@
-﻿using PrototipoBackEnd.Application.Dtos.Artesanato;
-using PrototipoBackEnd.Domain.Interfaces.Services;
-using PrototipoBackEnd.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PrototipoBackEnd.API.Extensions;
+using PrototipoBackEnd.API.Responses;
+using PrototipoBackEnd.Application.Dtos.Artesanato;
+using PrototipoBackEnd.Application.Interfaces;
 
 namespace PrototipoBackEnd.API.Controllers
 {
-	[ApiController]
-	[Route("[controller]")]
-	public class ArtesanatoController : ControllerBase
-	{
-		#region Construtor 
+    [ApiController]
+    [Route("[controller]")]
+    [Authorize(Policy = Policies.Administrador)]
+    public class ArtesanatoController : ControllerBase
+    {
+        private readonly IArtesanatoService _artesanatoService;
 
-		private readonly IConfiguration _configuration;
-		private readonly IArtesanatoService _artesanatoService;
-		private readonly ILogger<ArtesanatoController> _logger;
-		private readonly IAmazonS3Service _amazonS3Service;
+        public ArtesanatoController(IArtesanatoService artesanatoService)
+        {
+            _artesanatoService = artesanatoService;
+        }
 
-		public ArtesanatoController(IConfiguration configuration, ILogger<ArtesanatoController> logger, IArtesanatoService artesanatoService, IAmazonS3Service amazonS3Service)
-		{
-			_amazonS3Service = amazonS3Service;
-			_configuration = configuration;
-			_artesanatoService = artesanatoService;
-			_logger = logger;
-		}
+        [AllowAnonymous]
+        [HttpGet("BuscarTodos")]
+        [ProducesResponseType(typeof(ApiResponse<List<ArtesanatoDto>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> BuscarTodos()
+        {
+            var artesanatos = await _artesanatoService.BuscarTodos();
+            return Ok(new ApiResponse<List<ArtesanatoDto>>("Artesanatos encontrados", artesanatos));
+        }
 
-		#endregion
+        [AllowAnonymous]
+        [HttpGet("BuscarPorId/{id}")]
+        [ProducesResponseType(typeof(ApiResponse<ArtesanatoDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> BuscarPorId(string id)
+        {
+            var artesanato = await _artesanatoService.BuscarPorId(id);
+            return Ok(new ApiResponse<ArtesanatoDto>("Artesanato encontrado", artesanato));
+        }
 
-		private static List<ArtesanatoDto> artesanatos = new List<ArtesanatoDto>();
+        [AllowAnonymous]
+        [HttpGet("PorArtesao/{artesaoId}")]
+        [ProducesResponseType(typeof(ApiResponse<ArtesanatoDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> BuscarPorArtesaoId(string artesaoId)
+        {
+            var artesanato = await _artesanatoService.BuscarPorArtesaoId(artesaoId);
+            return Ok(new ApiResponse<ArtesanatoDto>("Artesanato encontrado", artesanato));
+        }
 
-		#region Usuário CRUD PADRÃO
+        [AllowAnonymous]
+        [HttpGet("TodosPorArtesao/{artesaoId}")]
+        [ProducesResponseType(typeof(ApiResponse<List<ArtesanatoDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> BuscarTodosPorArtesaoId(string artesaoId)
+        {
+            var artesanatos = await _artesanatoService.BuscarTodosPorArtesaoId(artesaoId);
+            return Ok(new ApiResponse<List<ArtesanatoDto>>("Artesanatos encontrados", artesanatos));
+        }
 
-		// READ - Buscar todos os Artesanatos (GET)
-		[AllowAnonymous]
-		[HttpGet("BuscarTodos")]
-		public async Task<ActionResult<List<ArtesanatoDto>>> BuscarTodos()
-		{
-			List<ArtesanatoDto> artesanatos = await _artesanatoService.BuscarTodos();
+        [HttpPost("Adicionar")]
+        [ProducesResponseType(typeof(ApiResponse<ArtesanatoDto>), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> Adicionar([FromForm] ArtesanatoDto dto, List<IFormFile> imagem)
+        {
+            var result = await _artesanatoService.Adicionar(dto, imagem);
+            return CreatedAtAction(nameof(BuscarPorId), new { id = result.Id },
+                new ApiResponse<ArtesanatoDto>("Artesanato criado com sucesso", result));
+        }
 
-			return Ok(artesanatos);
-		}
+        [HttpPut("Atualizar/{id}")]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Atualizar([FromForm] ArtesanatoDto dto, string id, List<IFormFile>? imagem = null)
+        {
+            await _artesanatoService.Atualizar(dto, id, imagem);
+            return Ok(new ApiResponse<object>("Artesanato atualizado com sucesso", null));
+        }
 
-		// READ - Buscar Artesanato por id (GET) {id}
-		[AllowAnonymous]
-		[HttpGet("BuscarPorId/{id}")]
-		public async Task<ActionResult<ArtesanatoDto>> BuscarPorId(string id)
-		{
-			try
-			{
-				// Chama o serviço para buscar o Artesanato
-				var artesanato = await _artesanatoService.BuscarPorId(id);
-
-				if (artesanato == null)
-				{
-					// Retorna NotFound se o Artesanato não for encontrado
-					return NotFound(new { message = $"Usuário com ID {id} não encontrado." });
-				}
-
-				// Retorna OK com os dados do Artesanato encontrado
-				return Ok(new { message = "Usuário encontrado", data = artesanato });
-			}
-			catch (Exception ex)
-			{
-				// Caso ocorra algum erro, retorna BadRequest com a mensagem de erro
-				return BadRequest(new { message = ex.Message });
-			}
-		}
-
-		[AllowAnonymous]
-		[HttpGet("PorArtesao/{artesaoId}")]
-		public async Task<ActionResult<ArtesanatoDto>> BuscarPorArtesaoId(string artesaoId)
-		{
-			try
-			{
-				// Chama o serviço para buscar o Artesanato
-				var artesanato = await _artesanatoService.BuscarPorArtesaoId(artesaoId);
-
-				if (artesanato == null)
-				{
-					// Retorna NotFound se o Artesanato não for encontrado
-					return NotFound(new { message = $"Artesanato com ID {artesaoId} não encontrado." });
-				}
-
-				// Retorna OK com os dados do Artesanato encontrado
-				return Ok(new { message = "Artesanato encontrado", data = artesanato });
-			}
-			catch (Exception ex)
-			{
-				// Caso ocorra algum erro, retorna BadRequest com a mensagem de erro
-				return BadRequest(new { message = ex.Message });
-			}
-		}
-
-		[AllowAnonymous]
-		[HttpGet("TodosPorArtesao/{artesaoId}")]
-		public async Task<ActionResult<ArtesanatoDto>> BuscarTodosPorArtesaoId(string artesaoId)
-		{
-			try
-			{
-				// Chama o serviço para buscar o Artesanato
-				var artesanatos = await _artesanatoService.BuscarTodosPorArtesaoId(artesaoId);
-
-				if (artesanatos == null)
-				{
-					// Retorna NotFound se o Artesanato não for encontrado
-					return NotFound(new { message = $"Artesanatos com o ArtesãoID {artesaoId} não encontrado." });
-				}
-
-				// Retorna OK com os dados do Artesanato encontrado
-				return Ok(new { message = "Artesanatos encontrados", data = artesanatos });
-			}
-			catch (Exception ex)
-			{
-				// Caso ocorra algum erro, retorna BadRequest com a mensagem de erro
-				return BadRequest(new { message = ex.Message });
-			}
-		}
-
-		// CREATE - Adicionar um novo Artesanato (POST)
-		[HttpPost("Adicionar")]
-		public async Task<ActionResult<ArtesanatoDto>> Adicionar([FromForm] ArtesanatoDto dto, List<IFormFile> imagem)
-		{
-			try
-			{
-				var result = await _artesanatoService.Adicionar(dto, imagem);
-				return Ok(result);
-			}
-			catch (Exception ex)
-			{
-				return BadRequest(new { message = ex.Message });
-			}
-		}
-
-		// UPDATE - Atualizar um Artesanato existente (PUT)
-		[HttpPut("Atualizar/{id}")]
-		public async Task<ActionResult<ArtesanatoDto>> Atualizar([FromForm] ArtesanatoDto dto, string id)
-		{
-			// Valida o modelo
-			if (!ModelState.IsValid)
-			{
-				return BadRequest(ModelState);
-			}
-
-			try
-			{
-				await _artesanatoService.Atualizar(dto, id);
-				return Ok(new { message = "Usuário atualizado com sucesso" });
-			}
-			catch (Exception ex)
-			{
-				return BadRequest(new { message = ex.Message });
-			}
-		}
-
-		// DELETE - Excluir um Artesanato existente (DELETE)
-		[HttpDelete("Excluir/{id}")]
-		public async Task<ActionResult<ArtesanatoDto>> Excluir(string id)
-		{
-			// Simula uma operação assíncrona
-			await Task.Delay(100);
-
-			var artesanatoId = await _artesanatoService.BuscarPorId(id); // Método assíncrono para buscar o Artesanato
-
-			if (artesanatoId == null)
-			{
-				return NotFound();
-			}
-
-			await _artesanatoService.Apagar(id);
-
-			return NoContent();
-		}
-
-		#endregion
-
-		#region Filtros 
-
-		#endregion
-
-	}
+        [HttpDelete("Excluir/{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Excluir(string id)
+        {
+            await _artesanatoService.Apagar(id);
+            return NoContent();
+        }
+    }
 }

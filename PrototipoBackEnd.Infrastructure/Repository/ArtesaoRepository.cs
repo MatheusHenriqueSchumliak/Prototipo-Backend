@@ -16,6 +16,11 @@ namespace PrototipoBackEnd.Infrastructure.Repository
 		}
 		#endregion
 
+		public async Task<Artesao?> BuscarPorPessoaId(string pessoaId)
+		{
+			return await _artesaoCollection.Find(a => a.PessoaId == pessoaId && a.IsAtivo).FirstOrDefaultAsync();
+		}
+
 		public async Task<IEnumerable<Artesao>> BuscarComFiltro(FilterDefinition<Artesao> filtro)
 		{
 			return await _artesaoCollection.Find(filtro).ToListAsync();

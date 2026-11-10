@@ -1,136 +1,82 @@
-﻿using PrototipoBackEnd.Domain.Interfaces.Services;
-using PrototipoBackEnd.Application.Dtos.Artesao;
-using PrototipoBackEnd.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PrototipoBackEnd.API.Extensions;
+using PrototipoBackEnd.API.Responses;
+using PrototipoBackEnd.Application.Dtos.Artesao;
+using PrototipoBackEnd.Application.Interfaces;
 
 namespace PrototipoBackEnd.API.Controllers
 {
-	[ApiController]
-	[Route("[controller]")]
-	public class ArtesaoController : ControllerBase
-	{
-		#region Construtor 
+    [ApiController]
+    [Route("[controller]")]
+    [Authorize(Policy = Policies.Administrador)]
+    public class ArtesaoController : ControllerBase
+    {
+        private readonly IArtesaoService _artesaoService;
 
-		private readonly IConfiguration _configuration;
-		private readonly IArtesaoService _artesaoService;
-		private readonly ILogger<ArtesaoController> _logger;
-		private readonly IAmazonS3Service _amazonS3Service;
+        public ArtesaoController(IArtesaoService artesaoService)
+        {
+            _artesaoService = artesaoService;
+        }
 
-		public ArtesaoController(IConfiguration configuration, ILogger<ArtesaoController> logger, IArtesaoService artesaoService, IAmazonS3Service amazonS3Service)
-		{
-			_amazonS3Service = amazonS3Service;
-			_configuration = configuration;
-			_artesaoService = artesaoService;
-			_logger = logger;
-		}
+        [AllowAnonymous]
+        [HttpGet("BuscarTodos")]
+        [ProducesResponseType(typeof(ApiResponse<List<ArtesaoDto>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> BuscarTodos(
+            [FromQuery] string? nome = null,
+            [FromQuery] string? nichoAtuacao = null,
+            [FromQuery] bool? receberEncomendas = null,
+            [FromQuery] bool? enviaEncomendas = null)
+        {
+            var artesaos = await _artesaoService.BuscarComFiltro(nome, nichoAtuacao, receberEncomendas, enviaEncomendas);
+            return Ok(new ApiResponse<List<ArtesaoDto>>("Artesãos encontrados", artesaos));
+        }
 
-		#endregion
+        [AllowAnonymous]
+        [HttpGet("BuscarPorId/{id}")]
+        [ProducesResponseType(typeof(ApiResponse<ArtesaoDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> BuscarPorId(string id)
+        {
+            var artesao = await _artesaoService.BuscarPorId(id);
+            return Ok(new ApiResponse<ArtesaoDto>("Artesão encontrado", artesao));
+        }
 
-		private static List<ArtesaoDto> artesaos = new List<ArtesaoDto>();
+        [HttpPost("Adicionar")]
+        [ProducesResponseType(typeof(ApiResponse<ArtesaoDto>), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> Adicionar([FromForm] ArtesaoDto dto, IFormFile imagem)
+        {
+            var result = await _artesaoService.Adicionar(dto, imagem);
+            return CreatedAtAction(nameof(BuscarPorId), new { id = result.Id },
+                new ApiResponse<ArtesaoDto>("Artesão criado com sucesso", result));
+        }
 
-		#region Usuário CRUD PADRÃO
+        [HttpPut("Atualizar/{id}")]
+        [ProducesResponseType(typeof(ApiResponse<ArtesaoDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Atualizar([FromForm] ArtesaoDto dto, string id, IFormFile? imagem = null)
+        {
+            var result = await _artesaoService.Atualizar(dto, id, imagem);
+            return Ok(new ApiResponse<ArtesaoDto>("Artesão atualizado com sucesso", result));
+        }
 
-		// READ - Buscar todos os Artesãos (GET)
-		[AllowAnonymous]
-		[HttpGet("BuscarTodos")]
-		public async Task<ActionResult<List<ArtesaoDto>>> BuscarTodos(
-			[FromQuery] string? nome = null,
-			[FromQuery] string? nichoAtuacao = null,
-			[FromQuery] bool? receberEncomendas = null,
-			[FromQuery] bool? enviaEncomendas = null)
-		{
-			// Sempre chama o método com filtro, mesmo que todos os parâmetros sejam nulos
-			var artesaos = await _artesaoService.BuscarComFiltro(nome, nichoAtuacao, receberEncomendas, enviaEncomendas);
-			return Ok(artesaos);
-		}
-
-		// READ - Buscar Artesão por id (GET) {id}
-		[AllowAnonymous]
-		[HttpGet("BuscarPorId/{id}")]
-		public async Task<ActionResult<ArtesaoDto>> BuscarPorId(string id)
-		{
-			try
-			{
-				// Chama o serviço para buscar o Artesão
-				var artesao = await _artesaoService.BuscarPorId(id);
-
-				if (artesao == null)
-				{
-					// Retorna NotFound se o Artesão não for encontrado
-					return NotFound(new { message = $"Usuário com ID {id} não encontrado." });
-				}
-
-				// Retorna OK com os dados do Artesão encontrado
-				return Ok(new { message = "Artesão encontrado", data = artesao });
-			}
-			catch (Exception ex)
-			{
-				// Caso ocorra algum erro, retorna BadRequest com a mensagem de erro
-				return BadRequest(new { message = ex.Message });
-			}
-		}
-
-		// CREATE - Adicionar um novo Artesão (POST)
-		[HttpPost("Adicionar")]
-		public async Task<ActionResult<ArtesaoDto>> Adicionar([FromForm] ArtesaoDto dto, IFormFile imagem)
-		{
-			try
-			{
-				var result = await _artesaoService.Adicionar(dto, imagem);
-				return Ok(result);
-			}
-			catch (Exception ex)
-			{
-				return BadRequest(new { message = ex.Message });
-			}
-		}
-
-		// UPDATE - Atualizar um Artesão existente (PUT)
-		[HttpPut("Atualizar/{id}")]
-		public async Task<ActionResult<ArtesaoDto>> Atualizar([FromForm] ArtesaoDto dto, string id, IFormFile? imagem = null)
-		{
-			// Valida o modelo
-			if (!ModelState.IsValid)
-			{
-				return BadRequest(ModelState);
-			}
-
-			try
-			{
-				await _artesaoService.Atualizar(dto, id, imagem);
-				return Ok(new { message = "Usuário atualizado com sucesso" });
-			}
-			catch (Exception ex)
-			{
-				return BadRequest(new { message = ex.Message });
-			}
-		}
-
-		// DELETE - Excluir um Artesão existente (DELETE)
-		[HttpDelete("Excluir/{id}")]
-		public async Task<ActionResult<ArtesaoDto>> Excluir(string id)
-		{
-			// Simula uma operação assíncrona
-			await Task.Delay(100);
-
-			var artesaoId = await _artesaoService.BuscarPorId(id); // Método assíncrono para buscar o Artesão
-
-			if (artesaoId == null)
-			{
-				return NotFound();
-			}
-
-			await _artesaoService.Apagar(id);
-
-			return NoContent();
-		}
-
-		#endregion
-
-		#region Filtros 
-
-		#endregion
-
-	}
+        [HttpDelete("Excluir/{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Excluir(string id)
+        {
+            await _artesaoService.Apagar(id);
+            return NoContent();
+        }
+    }
 }

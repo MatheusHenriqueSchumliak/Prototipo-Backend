@@ -1,104 +1,89 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using PrototipoBackEnd.API.WebApplicationExtensions;
-using PrototipoBackEnd.Infrastructure.IoC;
+using FluentValidation;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc;
 using PrototipoBackEnd.API.Extensions;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using System.Security.Claims;
+using PrototipoBackEnd.API.Middlewares;
+using PrototipoBackEnd.API.Responses;
+using PrototipoBackEnd.API.Startup;
+using PrototipoBackEnd.Infrastructure.IoC;
 
 namespace PrototipoBackEnd.API
 {
-	public class Program
-	{
-		public static void Main(string[] args)
-		{
-			var builder = WebApplication.CreateBuilder(args);
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            var builder = WebApplication.CreateBuilder(args);
 
-			Console.WriteLine("MONGO: " + (builder.Configuration["MongoDbSettings:ConnectionString"] ?? "NULL"));
+            builder.Services
+                .AddJwtAuthentication(builder.Configuration)
+                .AddAuthorizationPolicies();
 
-			builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-				.AddJwtBearer(options =>
-				{
-					var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? "sua_chave_padrao");
+            builder.Services.AddHttpContextAccessor();
 
-					options.TokenValidationParameters = new TokenValidationParameters
-					{
-						ValidateIssuer = true,
-						ValidateAudience = true,
-						ValidateLifetime = true,
-						ValidateIssuerSigningKey = true,
-						ValidIssuer = builder.Configuration["Jwt:Issuer"],
-						ValidAudience = builder.Configuration["Jwt:Audience"],
-						IssuerSigningKey = new SymmetricSecurityKey(key),
-						ClockSkew = TimeSpan.Zero // ⬅️ IMPORTANTE para não permitir tolerância padrão de 5 minutos!
-					};
+            builder.Services
+                .AddInfrastructure(builder.Configuration)
+                .AddSwaggerDocumentation()
+                .AddFrontendCors();
 
-					//options.Events = new JwtBearerEvents
-					//{
-					//	OnTokenValidated = context =>
-					//	{
-					//		// Verifica se o token possui a claim de role "Administrador"
-					//		var hasAdminRole = context.Principal?.Identity is ClaimsIdentity claimsIdentity &&
-					//						   claimsIdentity.HasClaim(c => c.Type == ClaimTypes.Role && c.Value == "Administrador");
+            builder.Services.AddHostedService<DatabaseInitializer>();
 
-					//		// Se quiser aplicar isso globalmente, mantenha. Se for só para certas rotas, remova.
-					//		// Aqui falha o token se não for administrador
-					//		if (!hasAdminRole)
-					//			context.Fail("Unauthorized - Apenas administradores podem acessar.");
+            builder.Services.AddValidatorsFromAssemblyContaining<PrototipoBackEnd.Application.Validators.PessoaDtoValidator>();
 
-					//		return Task.CompletedTask;
-					//	}
-					//};
-				});
+            builder.Services
+                .AddControllers(options => options.Filters.Add<PrototipoBackEnd.API.Filters.FluentValidationFilter>())
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false));
+                })
+                .ConfigureApiBehaviorOptions(options =>
+                {
+                    // Erros de validação no formato { message, errors } (sem ProblemDetails)
+                    options.InvalidModelStateResponseFactory = context =>
+                    {
+                        var erros = context.ModelState
+                            .Where(e => e.Value?.Errors.Count > 0)
+                            .SelectMany(e => e.Value!.Errors.Select(er => new FieldError(e.Key, er.ErrorMessage)))
+                            .ToList();
 
-			builder.Services.AddAuthorization(options =>
-			{
-				options.AddPolicy("Administrador", policy => policy.RequireRole("Administrador"));
-				//options.AddPolicy("Usuario", policy => policy.RequireRole("Usuario"));
-			});
+                        return new BadRequestObjectResult(new ErrorResponse("Dados inválidos.", erros));
+                    };
+                });
 
-			builder.Services.AddHttpContextAccessor();
-			// Adiciona a injeção de dependência da camada Infrastructure
-			builder.Services
-				.AddInfrastructure(builder.Configuration)
-				.AddSwaggerDocumentation()
-				.AddFrontendCors();
+            var app = builder.Build();
 
-			builder.Services.AddControllers();
+            // Primeiro da pipeline: captura exceções de todo o resto e responde no formato { message, errors? }
+            app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-			var app = builder.Build();
+            // Habilita Swagger também quando a chave EnableSwaggerInProduction = true
+            var enableSwaggerInProd = builder.Configuration.GetValue<bool>("EnableSwaggerInProduction");
+            if (builder.Environment.IsDevelopment() || enableSwaggerInProd)
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "PrototipoBackEnd API V1");
 
-			// Habilita Swagger também quando a chave EnableSwaggerInProduction = true
-			var enableSwaggerInProd = builder.Configuration.GetValue<bool>("EnableSwaggerInProduction");
-			if (builder.Environment.IsDevelopment() || enableSwaggerInProd)
-			{
-				app.UseSwagger();
-				app.UseSwaggerUI(c =>
-				{
-					c.SwaggerEndpoint("/swagger/v1/swagger.json", "PrototipoBackEnd API V1");
-					// se quiser o UI na raiz, descomente:
-					// c.RoutePrefix = string.Empty;
+                    // Oculta a seção "Models" (Schemas) do Swagger UI
+                    c.DefaultModelsExpandDepth(-1);
+                    c.DefaultModelExpandDepth(-1);
+                });
+            }
 
-					// Remove/oculta a seção "Models" (Schemas) do Swagger UI
-					c.DefaultModelsExpandDepth(-1);    // oculta o painel de Schemas
-					c.DefaultModelExpandDepth(-1);     // evita expansão automática de modelos
-				});
-			}
+            app.UseHttpsRedirection();
 
-			app.UseCustomMiddlewares();
+            app.UseRouting();
 
-			app.UseRouting();
+            app.UseCors("Frontend");
 
-			app.UseCors("Frontend");
+            app.UseAuthentication();
+            app.UseAuthorization();
 
-			app.UseAuthentication();
-			app.UseAuthorization();
+            app.MapGet("/", () => "PrototipoBackEnd API rodando no Azure 🚀");
 
-			app.MapGet("/", () => "PrototipoBackEnd API rodando no Azure 🚀");
+            app.MapControllers();
 
-			app.MapControllers();
-
-			app.Run();
-		}
-	}
+            app.Run();
+        }
+    }
 }

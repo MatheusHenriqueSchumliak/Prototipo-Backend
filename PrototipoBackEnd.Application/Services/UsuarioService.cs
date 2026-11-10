@@ -1,111 +1,144 @@
-﻿using PrototipoBackEnd.Application.Common.Extensions;
+using MongoDB.Driver;
+using PrototipoBackEnd.Application.Common.Helpers;
 using PrototipoBackEnd.Application.Dtos.Usuario;
-using PrototipoBackEnd.Application.Interfaces;
+using PrototipoBackEnd.Application.Exceptions;
 using PrototipoBackEnd.Application.Factories;
-using PrototipoBackEnd.Domain.Enumerables;
-using PrototipoBackEnd.Domain.Interfaces;
+using PrototipoBackEnd.Application.Interfaces;
 using PrototipoBackEnd.Domain.Entities;
+using PrototipoBackEnd.Domain.Interfaces;
+using PrototipoBackEnd.Domain.Interfaces.Repositories;
 
 namespace PrototipoBackEnd.Application.Services
 {
-	public class UsuarioService : IUsuarioService
-	{
-		#region Construtor
-		private readonly IUsuarioRepository _usuarioRepository;
-		private readonly ISenhaService _senhaService;
+    public class UsuarioService : IUsuarioService
+    {
+        #region Construtor
+        private readonly IUsuarioRepository _usuarioRepository;
+        private readonly IPessoaRepository _pessoaRepository;
+        private readonly ISenhaService _senhaService;
+        private readonly IUnitOfWork _unitOfWork;
 
-		public UsuarioService(IUsuarioRepository usuarioRepository, ISenhaService senhaService)
-		{
-			_usuarioRepository = usuarioRepository;
-			_senhaService = senhaService;
-		}
-		#endregion
+        public UsuarioService(IUsuarioRepository usuarioRepository, IPessoaRepository pessoaRepository, ISenhaService senhaService, IUnitOfWork unitOfWork)
+        {
+            _usuarioRepository = usuarioRepository;
+            _pessoaRepository = pessoaRepository;
+            _senhaService = senhaService;
+            _unitOfWork = unitOfWork;
+        }
+        #endregion
 
-		public async Task<List<UsuarioDto>> BuscarTodos()
-		{
-			var usuarios = await _usuarioRepository.BuscarTodos();
-			return usuarios.Select(UsuarioFactory.CriarDto).ToList();
-		}
+        public async Task<List<UsuarioResponseDto>> BuscarTodos()
+        {
+            var usuarios = await _usuarioRepository.BuscarTodos();
+            return usuarios.Where(u => u.IsAtivo).Select(UsuarioFactory.CriarDto).ToList();
+        }
 
-		public async Task<UsuarioDto> BuscarPorId(string id)
-		{
-			try
-			{
-				// Converte o ID para GUID, já que seu banco está usando GUID para o _id
-				var usuario = await _usuarioRepository.BuscarPorId(id);
+        public async Task<UsuarioResponseDto> BuscarPorId(string id)
+        {
+            IdValidator.Validar(id);
+            var usuario = await _usuarioRepository.BuscarPorId(id);
 
-				// Se o usuário for encontrado, retorna o DTO
-				if (usuario != null)
-				{
-					return UsuarioFactory.CriarDto(usuario);
-				}
+            if (usuario == null || !usuario.IsAtivo)
+                throw new NotFoundException("Usuário não foi encontrado.");
 
-				throw new Exception($"Usuário não foi encontrado!"); // Retorna null caso o usuário não seja encontrado
-			}
-			catch (Exception ex)
-			{
-				// Em caso de erro, lançar a exceção para ser tratada na controller
-				throw new Exception($"Erro ao buscar usuário: {ex.Message}");
-			}
-		}
+            return UsuarioFactory.CriarDto(usuario);
+        }
 
-		public async Task Adicionar(UsuarioDto dto)
-		{
-			try
-			{
-				var hash = _senhaService.CriarHash(dto.SenhaHash);
-				var usuario = Usuario.Criar(dto.PessoaId, dto.Email, hash, UsuarioEnum.Administrador);
+        public async Task<UsuarioResponseDto> Adicionar(UsuarioRequestDto dto)
+        {
+            IdValidator.Validar(dto.PessoaId, "PessoaId inválido.");
+            var pessoa = await _pessoaRepository.BuscarPorId(dto.PessoaId);
+            if (pessoa == null || !pessoa.IsAtivo)
+                throw new NotFoundException("Pessoa não foi encontrada.");
 
-				await _usuarioRepository.Adicionar(usuario);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Erro ao adicionar Usuário: {ex.Message}");
-			}
-		}
+            if (pessoa.TemUsuario)
+                throw new ConflictException("Pessoa já possui usuário.");
 
-		public async Task Atualizar(UsuarioDto dto, string id)
-		{
-			if (id == null)
-				throw new Exception($"Usuário para o ID: {id} não foi encontrado!");
+            await GarantirEmailDisponivel(dto.Email, idIgnorado: null);
 
-			var usuarioExistente = await _usuarioRepository.BuscarPorId(id);
+            var hash = _senhaService.CriarHash(dto.Senha);
+            var usuario = Usuario.Criar(dto.PessoaId, dto.Email, hash, dto.Role);
+            pessoa.VincularUsuario();
 
-			if (usuarioExistente == null)
-				throw new Exception($"Usuário com o ID: {id} não foi encontrado!");
+            await SalvarTratandoDuplicidade(() => _unitOfWork.ExecutarAsync(async () =>
+            {
+                await _usuarioRepository.Adicionar(usuario);
+                await _pessoaRepository.Atualizar(pessoa, pessoa.Id);
+            }));
 
-			// Atualiza a senha, se necessário
-			AtualizarSenha(usuarioExistente, dto);
+            return UsuarioFactory.CriarDto(usuario);
+        }
 
-			// Usa o AutoMapper para atualizar as propriedades do usuário  
-			var novoUsuario = UsuarioFactory.CriarEntidade(dto);
-			usuarioExistente.ApplyIfChanged(novoUsuario);
+        public async Task Atualizar(UsuarioAtualizarRequestDto dto, string id)
+        {
+            IdValidator.Validar(id);
+            var usuario = await _usuarioRepository.BuscarPorId(id);
 
-			// Persiste as alterações  
-			await _usuarioRepository.Atualizar(usuarioExistente, id); // Corrigido para passar apenas o objeto atualizado  
-		}
+            if (usuario == null || !usuario.IsAtivo)
+                throw new NotFoundException("Usuário não foi encontrado.");
 
-		public async Task<bool> Apagar(string id)
-		{
-			if (id == null)
-			{
-				throw new Exception($"Usuário para o ID: {id} não foi encontrado!");
-			}
+            // Somente campos explícitos: Id e DataCriacao nunca são tocados.
+            var emailNormalizado = dto.Email.Trim().ToLowerInvariant();
+            if (emailNormalizado != usuario.Email)
+            {
+                await GarantirEmailDisponivel(emailNormalizado, usuario.Id);
+                usuario.AlterarEmail(emailNormalizado);
+            }
 
-			await _usuarioRepository.Deletar(id);
-			return true;
-		}
+            if (dto.Role != usuario.Role)
+                usuario.AlterarRole(dto.Role);
 
-		#region Métodos Privados
-		// Método responsável por atualizar a senha
-		private void AtualizarSenha(Usuario usuarioExistente, UsuarioDto dto)
-		{
-			if (!string.IsNullOrWhiteSpace(dto.SenhaHash) && dto.SenhaHash != usuarioExistente.SenhaHash)
-			{
-				dto.SenhaHash = _senhaService.CriarHash(dto.SenhaHash);
-			}
-		}
-		#endregion
+            if (!string.IsNullOrWhiteSpace(dto.Senha))
+                usuario.AlterarSenha(_senhaService.CriarHash(dto.Senha));
 
-	}
+            await SalvarTratandoDuplicidade(() => _usuarioRepository.Atualizar(usuario, id));
+        }
+
+        public async Task<bool> Apagar(string id)
+        {
+            IdValidator.Validar(id);
+
+            var usuario = await _usuarioRepository.BuscarPorId(id);
+            if (usuario == null || !usuario.IsAtivo)
+                throw new NotFoundException("Usuário não foi encontrado.");
+
+            await _unitOfWork.ExecutarAsync(async () =>
+            {
+                usuario.Inativar();
+                await _usuarioRepository.Atualizar(usuario, id);
+
+                var pessoa = await _pessoaRepository.BuscarPorId(usuario.PessoaId);
+                if (pessoa != null)
+                {
+                    pessoa.DesvincularUsuario();
+                    await _pessoaRepository.Atualizar(pessoa, pessoa.Id);
+                }
+            });
+            return true;
+        }
+
+        #region Métodos Privados
+        private async Task GarantirEmailDisponivel(string email, string? idIgnorado)
+        {
+            var existente = await _usuarioRepository.ObterUsuarioPorEmail(email);
+
+            if (existente != null && existente.Id != idIgnorado)
+                throw new ConflictException("E-mail já cadastrado.");
+        }
+
+        // A checagem acima evita o caso comum; o índice único do Mongo cobre a corrida entre duas requisições.
+        private static async Task SalvarTratandoDuplicidade(Func<Task> salvar)
+        {
+            try
+            {
+                await salvar();
+            }
+            catch (MongoWriteException ex) when (ex.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+            {
+                throw new ConflictException("E-mail já cadastrado.");
+            }
+        }
+        #endregion
+
+    }
 }

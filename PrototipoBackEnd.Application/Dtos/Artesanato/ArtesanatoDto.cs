@@ -5,10 +5,8 @@ namespace PrototipoBackEnd.Application.Dtos.Artesanato
 	public class ArtesanatoDto
 	{
 		public string Id { get; set; } = string.Empty;
-		public string PessoaId { get; set; } = string.Empty;
 		public string ArtesaoId { get; set; } = string.Empty;
-		public string Titulo { get; set; } = string.Empty;
-		public string Descricao { get; set; } = string.Empty;
+		public string Titulo { get; set; } = string.Empty;		public string Descricao { get; set; } = string.Empty;
 		public int TempoCriacao { get; set; }
 		public int Quantidade { get; set; }
 		public decimal? Preco { get; set; }

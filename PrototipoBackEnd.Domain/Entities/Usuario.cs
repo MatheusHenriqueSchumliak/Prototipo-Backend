@@ -29,10 +29,14 @@ namespace PrototipoBackEnd.Domain.Entities
 			if (!email.Contains('@'))
 				throw new ArgumentException("Email inválido.");
 
+			// PessoaId inválido deve falhar; antes era trocado por um GUID aleatório, criando vínculo com Pessoa inexistente.
+			if (!Guid.TryParse(pessoaId, out _))
+				throw new ArgumentException("PessoaId inválido.");
+
 			return new Usuario
 			{
 				Id = Guid.NewGuid().ToString(),
-				PessoaId = Guid.TryParse(pessoaId, out var guidValido) ? pessoaId : Guid.NewGuid().ToString(),
+				PessoaId = pessoaId,
 				Email = email,
 				SenhaHash = senhaHash,
 				Role = role,

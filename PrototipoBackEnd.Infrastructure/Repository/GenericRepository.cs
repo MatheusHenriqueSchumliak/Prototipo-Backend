@@ -9,9 +9,11 @@ namespace PrototipoBackEnd.Infrastructure.Repository
 	{
 		#region Construtor 		
 		private readonly IMongoCollection<T> _collection;
+		private readonly MongoDbContext _context;
 
 		public GenericRepository(MongoDbContext mongoDbContext)
 		{
+			_context = mongoDbContext;
 			// Usando o mapeamento para buscar o nome correto da coleção e inicializar a coleção
 			var collectionName = MongoCollectionMapper.GetCollectionName<T>();
 			_collection = mongoDbContext.GetDatabase().GetCollection<T>(collectionName);
@@ -36,7 +38,11 @@ namespace PrototipoBackEnd.Infrastructure.Repository
 
 		public async Task<T> Adicionar(T entity)
 		{
-			await _collection.InsertOneAsync(entity);
+			var sessao = _context.SessaoAtual;
+			if (sessao != null)
+				await _collection.InsertOneAsync(sessao, entity);
+			else
+				await _collection.InsertOneAsync(entity);
 			return entity;
 		}
 
@@ -55,7 +61,11 @@ namespace PrototipoBackEnd.Infrastructure.Repository
 				prop.SetValue(entity, id);
 			}
 
-			var result = await _collection.ReplaceOneAsync(filter, entity, new ReplaceOptions { IsUpsert = false });
+			var sessao = _context.SessaoAtual;
+			var opcoes = new ReplaceOptions { IsUpsert = false };
+			var result = sessao != null
+				? await _collection.ReplaceOneAsync(sessao, filter, entity, opcoes)
+				: await _collection.ReplaceOneAsync(filter, entity, opcoes);
 
 			if (result.MatchedCount == 0)
 				throw new Exception($"Entidade com o ID {id} não encontrada.");

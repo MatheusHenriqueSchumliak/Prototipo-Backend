@@ -1,8 +1,10 @@
-﻿namespace PrototipoBackEnd.Domain.ValueObjects
+namespace PrototipoBackEnd.Domain.ValueObjects
 {
 	public class Categoria
 	{
-		public IReadOnlyList<string> Itens { get; }
+		public IReadOnlyList<string> Itens { get; private set; } = new List<string>();
+		private Categoria() { }
+
 		public Categoria(IEnumerable<string> categorias)
 		{
 			if (categorias == null)

@@ -1,117 +1,74 @@
-﻿using PrototipoBackEnd.Application.Dtos.Usuario;
-using PrototipoBackEnd.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PrototipoBackEnd.API.Extensions;
+using PrototipoBackEnd.API.Responses;
+using PrototipoBackEnd.Application.Dtos.Usuario;
+using PrototipoBackEnd.Application.Interfaces;
 
 namespace PrototipoBackEnd.API.Controllers
 {
-	[ApiController]
-	[Route("[controller]")]
-	public class UsuarioController : ControllerBase
-	{
-		#region Construtor 
+    [ApiController]
+    [Route("[controller]")]
+    [Authorize(Policy = Policies.Administrador)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    public class UsuarioController : ControllerBase
+    {
+        private readonly IUsuarioService _usuarioService;
 
-		private readonly IConfiguration _configuration;
-		private readonly IUsuarioService _usuarioService;
-		private readonly ILogger<UsuarioController> _logger;
+        public UsuarioController(IUsuarioService usuarioService)
+        {
+            _usuarioService = usuarioService;
+        }
 
-		public UsuarioController(IConfiguration configuration, ILogger<UsuarioController> logger, IUsuarioService usuarioService)
-		{
-			_configuration = configuration;
-			_usuarioService = usuarioService;
-			_logger = logger;
-		}
+        [HttpGet("BuscarTodos")]
+        [ProducesResponseType(typeof(ApiResponse<List<UsuarioResponseDto>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> BuscarTodos()
+        {
+            var usuarios = await _usuarioService.BuscarTodos();
+            return Ok(new ApiResponse<List<UsuarioResponseDto>>("Usuários encontrados", usuarios));
+        }
 
-		#endregion
+        [HttpGet("BuscarPorId/{id}")]
+        [ProducesResponseType(typeof(ApiResponse<UsuarioResponseDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> BuscarPorId(string id)
+        {
+            var usuario = await _usuarioService.BuscarPorId(id);
+            return Ok(new ApiResponse<UsuarioResponseDto>("Usuário encontrado", usuario));
+        }
 
-		private static List<UsuarioDto> usuarios = new List<UsuarioDto>();
+        [HttpPost("Adicionar")]
+        [ProducesResponseType(typeof(ApiResponse<UsuarioResponseDto>), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+        public async Task<IActionResult> Adicionar([FromBody] UsuarioRequestDto dto)
+        {
+            var usuario = await _usuarioService.Adicionar(dto);
+            return CreatedAtAction(nameof(BuscarPorId), new { id = usuario.Id },
+                new ApiResponse<UsuarioResponseDto>("Usuário criado com sucesso", usuario));
+        }
 
-		#region Usuário CRUD PADRÃO
+        [HttpPut("Atualizar/{id}")]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+        public async Task<IActionResult> Atualizar([FromBody] UsuarioAtualizarRequestDto dto, string id)
+        {
+            await _usuarioService.Atualizar(dto, id);
+            return Ok(new ApiResponse<object>("Usuário atualizado com sucesso", null));
+        }
 
-		// READ - Buscar todos os usuários (GET)
-		[HttpGet("BuscarTodos")]
-		public async Task<ActionResult<List<UsuarioDto>>> BuscarTodos()
-		{
-			List<UsuarioDto> usuarios = await _usuarioService.BuscarTodos();
-
-			return Ok(usuarios);
-		}
-
-		// READ - Buscar usuário por id (GET) {id}
-		[HttpGet("BuscarPorId/{id}")]
-		public async Task<ActionResult<UsuarioDto>> BuscarPorId(string id)
-		{
-			try
-			{
-				// Chama o serviço para buscar o usuário
-				var usuario = await _usuarioService.BuscarPorId(id);
-
-				if (usuario == null)
-				{
-					// Retorna NotFound se o usuário não for encontrado
-					return NotFound(new { message = $"Usuário com ID {id} não encontrado." });
-				}
-
-				// Retorna OK com os dados do usuário encontrado
-				return Ok(new { message = "Usuário encontrado", data = usuario });
-			}
-			catch (Exception ex)
-			{
-				// Caso ocorra algum erro, retorna BadRequest com a mensagem de erro
-				return BadRequest(new { message = ex.Message });
-			}
-		}
-
-		// CREATE - Adicionar um novo usuário (POST)
-		[HttpPost("Adicionar")]
-		public async Task<ActionResult<UsuarioDto>> Adicionar([FromForm] UsuarioDto dto)
-		{
-			await _usuarioService.Adicionar(dto);
-
-			//return CreatedAtAction(nameof(AdicionarUsuario), new { dto }, dto);
-			return Ok(dto);
-
-		}
-
-		// UPDATE - Atualizar um usuário existente (PUT)
-		[HttpPut("Atualizar/{id}")]
-		public async Task<ActionResult<UsuarioDto>> Atualizar([FromForm] UsuarioDto dto, string id)
-		{
-			// Valida o modelo
-			if (!ModelState.IsValid)
-			{
-				return BadRequest(ModelState);
-			}
-
-			try
-			{
-				await _usuarioService.Atualizar(dto, id);
-				return Ok(new { message = "Usuário atualizado com sucesso" });
-			}
-			catch (Exception ex)
-			{
-				return BadRequest(new { message = ex.Message });
-			}
-		}
-
-		// DELETE - Excluir um usuário existente (DELETE)
-		[HttpDelete("Excluir/{id}")]
-		public async Task<ActionResult<UsuarioDto>> Excluir(string id)
-		{
-			// Simula uma operação assíncrona
-			await Task.Delay(100);
-
-			var usuarioId = await _usuarioService.BuscarPorId(id);
-
-			if (usuarioId == null)
-			{
-				return NotFound();
-			}
-
-			await _usuarioService.Apagar(id);
-
-			return NoContent();
-		}
-
-		#endregion
-	}
+        [HttpDelete("Excluir/{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Excluir(string id)
+        {
+            await _usuarioService.Apagar(id);
+            return NoContent();
+        }
+    }
 }

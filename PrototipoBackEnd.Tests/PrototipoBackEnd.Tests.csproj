@@ -17,6 +17,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\PrototipoBackEnd.Application\PrototipoBackEnd.Application.csproj" />
+		<ProjectReference Include="..\PrototipoBackEnd.API\PrototipoBackEnd.API.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
